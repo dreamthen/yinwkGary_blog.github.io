@@ -1,6 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title><![CDATA[react思想]]></title>
+    <url>%2F2018%2F04%2F26%2Freact%E6%80%9D%E6%83%B3%2F</url>
+    <content type="text"><![CDATA[React主体思想 React的主体思想:数据驱动。就是利用数据的变化,来引起View视图的变化。React使用的是jsx(js + xml)语法和虚拟DOM,虚拟DOM是React做的一件很革新的事情,在React之前,DOM操作十分昂贵,大量的DOM操作耗费了web网站大量的时间,性能比较低。React使用Javascript模拟DOM,来进行View视图的渲染,虚拟DOM节点发生变化时,React首先会利用diff算法对前后的虚拟DOM树进行对比,一旦发现有所不同,就会引起虚拟DOM从根结点进行重新刷新,而浏览器实际操作DOM的仅仅是diff部分,尽管每一次虚拟DOM都会从根结点进行重新刷新,但是由于是内存数据,所以性能很高,而浏览器实际操作DOM的仅仅是diff的部分,所以很大程度上提高了web网站的性能。]]></content>
+      <categories>
+        <category>react</category>
+      </categories>
+      <tags>
+        <tag>react</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[2018-04-26 Javascript 0.1 + 0.2 !== 0.3]]></title>
+    <url>%2F2018%2F04%2F26%2Fjavascript-0-1-0-2-0-3%2F</url>
+    <content type="text"><![CDATA[为什么0.1 + 0.2 !== 0.3 Javascript的浮点数类型不够精确,双精度浮点数类型的二进制位数加上符号位为53位,也就是说0.1的二进制树加上0.2的二进制数,转化为十进制数为0.30000000000000004,所以0.1 + 0.2 !== 0.3 怎么解决0.1 + 0.2 !== 0.3的问题 最好的方法是设置一个误差”机器精度”的范围值,与0.1 + 0.2 - 0.3的值进行比较,假如不超过这个范围就返回true,如果超过这个范围就返回false,可以利用ES6给开发者提供的一个新属性EPSILON,这个属性正好等于2^-52,无限接近于0,但不等于0 0.1 + 0.2 - 0.3 &lt; Number.EPSILON 也可以利用保留小数的方式进行解决,比如toFixed和toPrecision parseFloat((0.1 + 0.2).toFixed(1)) === 0.3]]></content>
+      <categories>
+        <category>Javascript</category>
+      </categories>
+      <tags>
+        <tag>Javascript</tag>
+      </tags>
+  </entry>
+  <entry>
     <title><![CDATA[2018-04-25 react优化]]></title>
     <url>%2F2018%2F04%2F25%2Freact%E4%BC%98%E5%8C%96%2F</url>
     <content type="text"><![CDATA[React性能优化 由于React使用的虚拟DOM在其节点发生变化时,React会使用Diff算法对前后的虚拟DOM树进行对比,一旦发现不同,虚拟DOM树就会从根结点进行重新刷新,而浏览器进行实际操作DOM的仅仅是diff的部分,尽管每次虚拟DOM都会从根结点进行重新刷新,但是由于javascript是存储在内存中,所以性能很高,但是每一次都会从虚拟DOM的根结点进行重新刷新,会造成一些无谓的虚拟DOM树的重新刷新,比如父组件的虚拟DOM节点修改发生了变化,虚拟DOM节点根据diff算法进行对比之后,就会从虚拟DOM根结点进行重新刷新,但是其子组件并没有发生虚拟DOM的修改,这是子组件也会跟着父组件一起进行虚拟DOM树的diff算法对比和虚拟DOM节点的重新刷新,也耗费了比较多的时间。为了避免无谓的虚拟DOM树diff算法对比和虚拟DOM根结点的重新刷新,React给开发者提供了shouldComponentUpdate进行判断,shouldComponentUpdate是运行在虚拟DOM树diff算法对比和虚拟DOM树根结点重新渲染之前的,假如返回true就说明,数据发生了变化,需要进行虚拟DOM树diff算法对比以及虚拟DOM根结点的重新刷新,否则就返回false,不执行虚拟DOM树diff算法对比以及虚拟DOM根结点的重新刷新。 避免无谓的虚拟DOM树重新刷新 假如有一个组件仅仅渲染一个字符串,利用shouldComponentUpdate进行判断,避免无谓的虚拟DOM树重新刷新 class TextView extends React.Component{ static propTypes = { value: PropTypes.string.isRequired }; constructor(props){ super(props); this.state = { }; } shouldComponentUpdate(nextProps, nextState){ return this.props.value !== nextProps.value; } render(){ let {value} = this.props; return ( &lt;h1&gt; {value} &lt;/h1&gt; ) } }]]></content>
