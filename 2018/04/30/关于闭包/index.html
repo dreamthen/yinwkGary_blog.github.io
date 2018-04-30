@@ -87,7 +87,7 @@
 <meta property="og:site_name" content="yinwk_Gary Blog">
 <meta property="og:description" content="什么是回调函数 A函数作为B函数的参数,并在B函数中执行,A函数就是回调函数。  function setTimer(fn, timer) {     fn(timer); }  //function timer就是function setTimer的回调函数 setTimer(function timer(time) {     console.log(time); }, 1000);  回调函">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2018-04-30T10:21:59.223Z">
+<meta property="og:updated_time" content="2018-04-30T10:30:53.995Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="2018-04-30 关于闭包">
 <meta name="twitter:description" content="什么是回调函数 A函数作为B函数的参数,并在B函数中执行,A函数就是回调函数。  function setTimer(fn, timer) {     fn(timer); }  //function timer就是function setTimer的回调函数 setTimer(function timer(time) {     console.log(time); }, 1000);  回调函">
@@ -418,7 +418,7 @@ bar();
 <p>还有一种形式是这样</p>
 </blockquote>
 <pre><code>function foo() {
-    var _name = &quot;Gary&quot;;
+    let _name = &quot;Gary&quot;;
     function bar() {
         console.log(`name: ${_name}`);
     }
