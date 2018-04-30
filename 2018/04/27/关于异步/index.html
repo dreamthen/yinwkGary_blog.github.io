@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="Hexo, NexT" />
+  <meta name="keywords" content="异步,Promise,async await," />
 
 
 
@@ -79,17 +79,18 @@
 
 
 
-<meta name="description" content="Gary&apos;s blog,记录_从今天开始">
-<meta name="keywords" content="hexo,hexo-cli,hexo博客,hexo博客个人网站">
-<meta property="og:type" content="website">
-<meta property="og:title" content="yinwk_Gary Blog">
-<meta property="og:url" content="http://yoursite.com/categories/react-router/index.html">
+<meta name="description" content="什么是异步 异步在JS中的表现分为三类:  时间延迟,比如setTimeout,setInterval这种时间处理函数 事件处理,比如onClick(点击事件),onChange(输入框内容改变回调),onMouseover(鼠标移入事件),onMouseout(鼠标移出事件),onMouseEnter(鼠标移入事件),onMouseLeave(鼠标移出事件)等等 xhr、fetch请求等等">
+<meta name="keywords" content="异步,Promise,async await">
+<meta property="og:type" content="article">
+<meta property="og:title" content="2018-04-27 关于异步">
+<meta property="og:url" content="http://yoursite.com/2018/04/27/关于异步/index.html">
 <meta property="og:site_name" content="yinwk_Gary Blog">
-<meta property="og:description" content="Gary&apos;s blog,记录_从今天开始">
+<meta property="og:description" content="什么是异步 异步在JS中的表现分为三类:  时间延迟,比如setTimeout,setInterval这种时间处理函数 事件处理,比如onClick(点击事件),onChange(输入框内容改变回调),onMouseover(鼠标移入事件),onMouseout(鼠标移出事件),onMouseEnter(鼠标移入事件),onMouseLeave(鼠标移出事件)等等 xhr、fetch请求等等">
 <meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-04-30T05:04:52.459Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="yinwk_Gary Blog">
-<meta name="twitter:description" content="Gary&apos;s blog,记录_从今天开始">
+<meta name="twitter:title" content="2018-04-27 关于异步">
+<meta name="twitter:description" content="什么是异步 异步在JS中的表现分为三类:  时间延迟,比如setTimeout,setInterval这种时间处理函数 事件处理,比如onClick(点击事件),onChange(输入框内容改变回调),onMouseover(鼠标移入事件),onMouseout(鼠标移出事件),onMouseEnter(鼠标移入事件),onMouseLeave(鼠标移出事件)等等 xhr、fetch请求等等">
 
 
 
@@ -119,13 +120,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/categories/react-router/"/>
+  <link rel="canonical" href="http://yoursite.com/2018/04/27/关于异步/"/>
 
 
 
 
 
-  <title>分类: react-router | yinwk_Gary Blog</title>
+  <title>2018-04-27 关于异步 | yinwk_Gary Blog</title>
   
 
 
@@ -144,7 +145,7 @@
     
   
 
-  <div class="container sidebar-position-left ">
+  <div class="container sidebar-position-left page-post-detail">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -282,55 +283,343 @@
           <div id="content" class="content">
             
 
-  
-  
-  
-  <div class="post-block category">
+  <div id="posts" class="posts-expand">
+    
 
-    <div id="posts" class="posts-collapse">
-      <div class="collection-title">
-        <h1>react-router<small>分类</small>
-        </h1>
-      </div>
+  
 
-      
-        
+  
+  
+  
 
   <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/04/27/关于异步/">
 
-      <h2 class="post-title">
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="yinwk_Gary">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://avatars1.githubusercontent.com/u/13704681?s=400&u=bfc4636397a7c4384f63d4836a33d1797cd2c660&v=4">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="yinwk_Gary Blog">
+    </span>
+
+    
+      <header class="post-header">
+
         
-            <a class="post-title-link" href="/2018/04/25/react-router-3-0-browserHistory配置/" itemprop="url">
-              
-                <span itemprop="name">2018-04-25 react-router 3.0 browserHistory配置</span>
-              
-            </a>
         
-      </h2>
+          <h1 class="post-title" itemprop="name headline">2018-04-27 关于异步</h1>
+        
 
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2018-04-25T13:01:53+08:00"
-              content="2018-04-25" >
-          04-25
-        </time>
-      </div>
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-04-27T23:45:48+08:00">
+                2018-04-27
+              </time>
+            
 
-    </header>
-  </article>
+            
 
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/异步/" itemprop="url" rel="index">
+                    <span itemprop="name">异步</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
 
       
-    </div>
+      
 
+      
+        <h1 id="什么是异步"><a href="#什么是异步" class="headerlink" title="什么是异步"></a>什么是异步</h1><blockquote>
+<p>异步在JS中的表现分为三类:</p>
+<ol>
+<li>时间延迟,比如setTimeout,setInterval这种时间处理函数</li>
+<li>事件处理,比如onClick(点击事件),onChange(输入框内容改变回调),onMouseover(鼠标移入事件),onMouseout(鼠标移出事件),onMouseEnter(鼠标移入事件),onMouseLeave(鼠标移出事件)等等</li>
+<li>xhr、fetch请求等等</li>
+</ol>
+</blockquote>
+<h1 id="为什么会出现异步"><a href="#为什么会出现异步" class="headerlink" title="为什么会出现异步"></a>为什么会出现异步</h1><blockquote>
+<p>由于JS是单线程(同一时间,只能做一件事情)的语言,为了实现时间延迟、事件处理和xhr、fetch请求处理这些必须是异步的操作,JS必须处理单线程怎样异步的问题。</p>
+</blockquote>
+<h1 id="为什么JS要使用单线程"><a href="#为什么JS要使用单线程" class="headerlink" title="为什么JS要使用单线程"></a>为什么JS要使用单线程</h1><blockquote>
+<p>JS使用单线程,是由于JS中不仅仅有ECMAScript,还有DOM(Document Object Modal),html渲染DOM,JS也可以动态改变DOM,假如JS不是单线程,同一时间可以处理多件事情,html渲染DOM和JS动态改变DOM就会混乱,浏览器会不知道是先渲染html DOM,还是先执行JS动态改变DOM,即使是实现了多线程的WebWorker,也没有触及DOM部分。</p>
+</blockquote>
+<h1 id="关于异步"><a href="#关于异步" class="headerlink" title="关于异步"></a>关于异步</h1><blockquote>
+<p>JS使用单线程,运行时,先会运行同步代码,如果遇到异步代码,就会先将异步代码放进内存的异步队列中,待到同步代码运行完毕,就会去轮询异步队列中的异步代码。</p>
+</blockquote>
+<blockquote>
+<p>假如异步闭包中还存在异步闭包,在异步队列中,就会将里层的异步闭包push到外层的异步闭包后面,待到外层的异步闭包执行完毕之后,再执行里层的异步闭包。</p>
+</blockquote>
+<h1 id="使用异步出现的问题"><a href="#使用异步出现的问题" class="headerlink" title="使用异步出现的问题"></a>使用异步出现的问题</h1><blockquote>
+<p>JS使用异步解决了JS单线程的问题,但是异步却又引起了另外一个问题,就是异步情况下的同步执行,尤其是xhr、fetch的请求,由于响应时间不确定,很容易引起异步执行混乱的问题。</p>
+</blockquote>
+<h1 id="异步的演变过程"><a href="#异步的演变过程" class="headerlink" title="异步的演变过程"></a>异步的演变过程</h1><h4 id="setTimeout-callback"><a href="#setTimeout-callback" class="headerlink" title="setTimeout callback"></a>setTimeout callback</h4><blockquote>
+<p>之前还没有使用nodejs的时候,解决异步问题基本上使用的是setTimeout使用异步闭包去解决异步的方式,比如在react中,setState就是异步执行的,假如name的初始值为Gary</p>
+</blockquote>
+<pre><code>componentWillMount() {
+    this.setState({
+        name: &quot;Yinwk&quot;
+    });
+    this.setState({
+        name: &quot;CLAY&quot;
+    });
+    //这时候由于setState是异步的,所以会先执行同步代码,也就是说这时候this.state.name的值依然为Gary
+    console.log(this.state.name);
+}
+
+
+componentWillMount() {
+    setTimeout(function timer(){
+        this.setState({
+            name: &quot;Yinwk&quot;
+        });
+        //这时候this.state.name的值就变为了Yinwk
+        console.log(this.state.name);
+        setTimeout(function timer(){
+            this.setState({
+                name: &quot;CLAY&quot;
+            });
+            //这时候this.state.name的值就变为了CLAY
+            console.log(this.state.name);
+        }.bind(this), 0);
+    }.bind(this), 0)
+}
+</code></pre><h4 id="EventEmitter-并不是异步问题的解决方案"><a href="#EventEmitter-并不是异步问题的解决方案" class="headerlink" title="EventEmitter(并不是异步问题的解决方案)"></a>EventEmitter(并不是异步问题的解决方案)</h4><blockquote>
+<p>nodejs出现之后,event模块有一个类——EventEmitter,一直以为它是一个消息管理模块,跟Event Loop异步队列有着千丝万缕的关系,后来看了源码,发现它并不是一个消息管理模块,跟消息队列没有任何关系,on/emit只是一个监听的观察者模式,on时添加/删除listener,emit时运行回调函数。还是拿上一个例子进行举例,假如name的初始值为Gary</p>
+</blockquote>
+<pre><code>import {EventEmitter} from &quot;events&quot;;
+
+const eventEmitter = new EventEmitter();
+
+componentWillMount(){
+    eventEmitter.on(&quot;gary&quot;, () =&gt; {
+        this.setState({
+            name: &quot;Yinwk&quot;
+        });
+        console.log(this.state.name);
+    });
+    //这里打印出的this.state.name还是Gary,由于EventEmitter跟消息队列没有任何关系,所以并不是异步,只是一个监听的观察者模式,所以是同步的
+    eventEmitter.emit(&quot;gary&quot;);
+}
+</code></pre><h4 id="Promise"><a href="#Promise" class="headerlink" title="Promise"></a>Promise</h4><blockquote>
+<p>ES6语法发布之后,Promise成为了新的解决异步问题的方案,实质的也是利用异步闭包来解决异步问题。还是拿最初的例子进行举例,假如name的初始值为Gary</p>
+</blockquote>
+<pre><code>ComponentWillMount() {
+    (function iifeSetName() {
+        return new Promise(function promise(resolve, reject) {
+            this.setState({
+                name: &quot;Yinwk&quot;
+            });
+            resolve();
+        }.bind(this));
+    }.bind(this))().then(function resolve() {
+        //这里打印出的this.state.name就是Yinwk
+        console.log(this.state.name);
+    }.bind(this), function reject() {
+
+    }.bind(this));   
+}
+</code></pre><h4 id="yield-and"><a href="#yield-and" class="headerlink" title="yield and *"></a>yield and *</h4><blockquote>
+<p>再到后来最新的解决异步的方案:yield *配合Promise,也就是Generator控制迭代器,执行时每执行到yield时,就会停止执行并返回一个Iterator迭代器,且会保留上下文,直到下次运行,社区tj大神的co函数同步读取文件就是使用了yield *配合Promise</p>
+</blockquote>
+<pre><code>const fs = require(&quot;fs&quot;);
+
+function readFile(file){
+    return new Promise((resolve, reject) =&gt; {
+        fs.readFile((err, data) =&gt; {
+            if(err) reject(err);
+            resolve(data);
+        });       
+    });
+}
+
+function *gc() {
+    let a = yield readFile(&quot;../data/file_first.txt&quot;);
+    console.log(a);
+    let b = yield readFile(&quot;../data/file_second.txt&quot;);
+    console.log(b);
+    return b;
+}
+
+co(gc).then(function resolve(data){
+    console.log(data);
+}.bind(this), function reject(){
+
+}.bind(this));
+
+//co函数利用yield * + Promise同步读取文件
+function co(gc_co){
+    let gc = gc_co();
+    return new Promise((resolve, reject) =&gt; {
+        //这里实现一个Generator控制迭代器的迭代循环
+        (function readData(data){
+            let gcNext = gc.next(data),
+                value = gcNext.value,
+                done = gcNext.done;
+            if(done) {
+                resolve(value);
+            } else {
+                value.then(readData, reject);
+            }
+        })();
+    });
+}
+</code></pre><h4 id="async-and-await"><a href="#async-and-await" class="headerlink" title="async and await"></a>async and await</h4><blockquote>
+<p>现如今的推出的解决异步问题的最终解决方案:async和await,很好的解决了异步的问题,且当await Promise时,返回的是fulfilled和rejected返回的结果。还是拿最初的例子进行举例,假如name的初始值为Gary</p>
+</blockquote>
+<pre><code>ComponentWillMount() {
+    (async function iifeSetName() {
+        await this.setState({
+            name: &quot;Yinwk&quot;
+        });
+        //这里打印出的this.state.name就是Yinwk
+        await console.log(this.state.name);
+    }.bind(this))();
+}
+</code></pre><blockquote>
+<p>还可以这样</p>
+</blockquote>
+<pre><code>ComponentWillMount() {
+    (async function iifeSetName() {
+        let name = await new Promise((resolve, reject) =&gt; {
+            this.setState({
+                name: &quot;Yinwk&quot;
+            });
+            resolve();
+        }).then(()=&gt;{
+            return this.state.name;
+        }, ()=&gt;{
+
+        });
+        //这里打印出的this.state.name就是Yinwk
+        await console.log(name);
+        //这里打印出的this.state.name还是Yinwk
+        await console.log(this.state.name);
+    }.bind(this))();
+}    
+</code></pre>
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/异步/" rel="tag"># 异步</a>
+          
+            <a href="/tags/Promise/" rel="tag"># Promise</a>
+          
+            <a href="/tags/async-await/" rel="tag"># async await</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/04/27/关于webpack/" rel="next" title="2018-04-27 关于webpack">
+                <i class="fa fa-chevron-left"></i> 2018-04-27 关于webpack
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/04/30/关于闭包/" rel="prev" title="2018-04-30 关于闭包">
+                2018-04-30 关于闭包 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
   </div>
   
   
   
+  </article>
 
-  
 
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
 
 
           </div>
@@ -338,6 +627,10 @@
 
 
           
+
+  
+
+
 
         </div>
         
@@ -358,8 +651,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -445,6 +747,22 @@
         </div>
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#什么是异步"><span class="nav-number">1.</span> <span class="nav-text">什么是异步</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#为什么会出现异步"><span class="nav-number">2.</span> <span class="nav-text">为什么会出现异步</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#为什么JS要使用单线程"><span class="nav-number">3.</span> <span class="nav-text">为什么JS要使用单线程</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#关于异步"><span class="nav-number">4.</span> <span class="nav-text">关于异步</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#使用异步出现的问题"><span class="nav-number">5.</span> <span class="nav-text">使用异步出现的问题</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#异步的演变过程"><span class="nav-number">6.</span> <span class="nav-text">异步的演变过程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#setTimeout-callback"><span class="nav-number">6.0.0.1.</span> <span class="nav-text">setTimeout callback</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#EventEmitter-并不是异步问题的解决方案"><span class="nav-number">6.0.0.2.</span> <span class="nav-text">EventEmitter(并不是异步问题的解决方案)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Promise"><span class="nav-number">6.0.0.3.</span> <span class="nav-text">Promise</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#yield-and"><span class="nav-number">6.0.0.4.</span> <span class="nav-text">yield and *</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#async-and-await"><span class="nav-number">6.0.0.5.</span> <span class="nav-text">async and await</span></a></li></ol></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
@@ -578,6 +896,10 @@
   
 
   
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
 
   
 
