@@ -1,6 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title><![CDATA[2018-04-30 webpack打包如何防止第三方依赖包体积过大造成打包速度慢的问题]]></title>
+    <url>%2F2018%2F04%2F30%2Fwebpack%E6%89%93%E5%8C%85%E5%A6%82%E4%BD%95%E9%98%B2%E6%AD%A2%E7%AC%AC%E4%B8%89%E6%96%B9%E4%BE%9D%E8%B5%96%E5%8C%85%E4%BD%93%E7%A7%AF%E8%BF%87%E5%A4%A7%E9%80%A0%E6%88%90%E6%89%93%E5%8C%85%E9%80%9F%E5%BA%A6%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98%2F</url>
+    <content type="text"><![CDATA[为何第三方依赖包会引起打包的体积过大 ES6的模块化机制,当引入外部第三方依赖包时,无论是否已经引入,都会再次将其引入进来,这时候就会存在重复引入导致打包体积过大、打包速度过慢的问题。 如何解决重复引入第三方依赖包,引起的打包体积过大以及打包速度过慢的问题 DllPlugin和DllReferencePlugin生成第三方manifest json api包,每次当项目中去引入api包所拥有的依赖包时,就会直接从api包中去获取,而不是直接将整个第三方依赖包代码重复引入多次。 CommonsChunkPlugin合并入口所属的页面所使用的所有的组件所使用的第三方依赖包,当引用时,也是从合并的包中去获取,而不是直接将整个第三方依赖包代码重复引入多次。 entry:{ login: `${APP_DIR}/login.js`, index: `${APP_DIR}/index.js`, &apos;vendor&apos;: [&apos;react&apos;, &apos;react-redux&apos;, &apos;redux&apos;, &apos;react-router&apos;, &apos;react-dom&apos;, &apos;react-addons&apos;, &apos;redux-thunk&apos;, &apos;redux-logger&apos;, &apos;redux-saga&apos;, &apos;antd&apos;, &apos;moment&apos;, &apos;prop-types&apos;] }, plugins: [ //无论引入还是没有引入entry vendor入口中的外部依赖包,都会被CommonsChunkPlugin抽离出来,做成第三方公共模块。 new webpack.optimize.CommonsChunkPlugin({ name: &apos;vendor&apos;, filename: &apos;vendor.js&apos; }), new webpack.optimize.CommonsChunkPlugin({ name: &apos;manifest&apos;, chunks: [&apos;vendor&apos;] }) ]]]></content>
+      <categories>
+        <category>webpack</category>
+      </categories>
+      <tags>
+        <tag>webpack</tag>
+      </tags>
+  </entry>
+  <entry>
     <title><![CDATA[2018-04-30 关于闭包]]></title>
     <url>%2F2018%2F04%2F30%2F%E5%85%B3%E4%BA%8E%E9%97%AD%E5%8C%85%2F</url>
     <content type="text"><![CDATA[什么是回调函数 A函数作为B函数的参数,并在B函数中执行,A函数就是回调函数。 function setTimer(fn, timer) { fn(timer); } //function timer就是function setTimer的回调函数 setTimer(function timer(time) { console.log(time); }, 1000); 回调函数也分同步和异步,上例就是同步,而像setTimeout,setInterval中这种牵扯到消息队列(异步队列),Event Loop的回调函数来说,就是异步。 什么是闭包 “A函数中包含B函数,并返回B函数,调用B函数可以使用A函数作用域中定义的变量”,B函数就是闭包,示例如下: function foo() { let _name = &quot;Gary&quot;; function bar() { console.log(`name: ${_name}`); } return bar; } //foo函数执行之后,作用域会被销毁,随之而然的作用域中定义的变量应该会被销毁,并被引擎垃圾回收机制回收, //但是在这里神奇的事情发生了,foo函数作用域并没有被销毁之后回收,而是还存在于内存中,并被bar使用,这里就形成了闭包。 let bar = foo(); bar(); 还有一种形式是这样 function foo() { let _name = &quot;Gary&quot;; function bar() { console.log(`name: ${_name}`); } baz(bar); } //这里在foo函数执行之后,按理来说,foo函数中作用域,以及其中_name变量,都会被销毁,并随后被引擎垃圾回收机制回收。 //但是神奇的是,这里的作用域并没有被销毁,而其中的_name变量也没有被销毁,当然也没有被引擎垃圾回收机制回收,而还是存储于内存中,并被bar使用,这里就形成了闭包。 function baz(fn) { fn(); } foo();]]></content>
