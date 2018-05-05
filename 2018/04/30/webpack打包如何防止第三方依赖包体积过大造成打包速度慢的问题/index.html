@@ -79,18 +79,18 @@
 
 
 
-<meta name="description" content="为何第三方依赖包会引起打包的体积过大 ES6的模块化机制,当引入外部第三方依赖包时,无论是否已经引入,都会再次将其引入进来,这时候就会存在重复引入导致打包体积过大、打包速度过慢的问题。  如何解决重复引入第三方依赖包,引起的打包体积过大以及打包速度过慢的问题  DllPlugin和DllReferencePlugin生成第三方manifest json api包,每次当项目中去引入api包所拥有的">
+<meta name="description" content="为何第三方依赖包会引起打包的体积过大 ES6的模块化机制,当引入外部第三方依赖包时,无论是否已经引入,都会再次将其引入进来,这时候就会存在重复引入导致打包体积过大、打包速度过慢的问题。  如何解决重复引入第三方依赖包,引起的打包体积过大以及打包速度过慢的问题">
 <meta name="keywords" content="webpack">
 <meta property="og:type" content="article">
 <meta property="og:title" content="2018-04-30 webpack打包如何防止第三方依赖包体积过大造成打包速度慢的问题">
 <meta property="og:url" content="http://yoursite.com/2018/04/30/webpack打包如何防止第三方依赖包体积过大造成打包速度慢的问题/index.html">
 <meta property="og:site_name" content="yinwk_Gary Blog">
-<meta property="og:description" content="为何第三方依赖包会引起打包的体积过大 ES6的模块化机制,当引入外部第三方依赖包时,无论是否已经引入,都会再次将其引入进来,这时候就会存在重复引入导致打包体积过大、打包速度过慢的问题。  如何解决重复引入第三方依赖包,引起的打包体积过大以及打包速度过慢的问题  DllPlugin和DllReferencePlugin生成第三方manifest json api包,每次当项目中去引入api包所拥有的">
+<meta property="og:description" content="为何第三方依赖包会引起打包的体积过大 ES6的模块化机制,当引入外部第三方依赖包时,无论是否已经引入,都会再次将其引入进来,这时候就会存在重复引入导致打包体积过大、打包速度过慢的问题。  如何解决重复引入第三方依赖包,引起的打包体积过大以及打包速度过慢的问题">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2018-05-02T14:44:06.982Z">
+<meta property="og:updated_time" content="2018-05-05T13:16:41.242Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="2018-04-30 webpack打包如何防止第三方依赖包体积过大造成打包速度慢的问题">
-<meta name="twitter:description" content="为何第三方依赖包会引起打包的体积过大 ES6的模块化机制,当引入外部第三方依赖包时,无论是否已经引入,都会再次将其引入进来,这时候就会存在重复引入导致打包体积过大、打包速度过慢的问题。  如何解决重复引入第三方依赖包,引起的打包体积过大以及打包速度过慢的问题  DllPlugin和DllReferencePlugin生成第三方manifest json api包,每次当项目中去引入api包所拥有的">
+<meta name="twitter:description" content="为何第三方依赖包会引起打包的体积过大 ES6的模块化机制,当引入外部第三方依赖包时,无论是否已经引入,都会再次将其引入进来,这时候就会存在重复引入导致打包体积过大、打包速度过慢的问题。  如何解决重复引入第三方依赖包,引起的打包体积过大以及打包速度过慢的问题">
 
 
 
@@ -390,53 +390,8 @@
 <p>ES6的模块化机制,当引入外部第三方依赖包时,无论是否已经引入,都会再次将其引入进来,这时候就会存在重复引入导致打包体积过大、打包速度过慢的问题。</p>
 </blockquote>
 <h1 id="如何解决重复引入第三方依赖包-引起的打包体积过大以及打包速度过慢的问题"><a href="#如何解决重复引入第三方依赖包-引起的打包体积过大以及打包速度过慢的问题" class="headerlink" title="如何解决重复引入第三方依赖包,引起的打包体积过大以及打包速度过慢的问题"></a>如何解决重复引入第三方依赖包,引起的打包体积过大以及打包速度过慢的问题</h1><blockquote>
-<ol>
-<li>DllPlugin和DllReferencePlugin生成第三方manifest json api包,每次当项目中去引入api包所拥有的依赖包时,就会直接从api包中去获取,而不是直接将整个第三方依赖包代码重复引入多次。</li>
-<li>CommonsChunkPlugin合并入口所属的页面所使用的所有的组件所使用的第三方依赖包,当引用时,也是从合并的包中去获取,而不是直接将整个第三方依赖包代码重复引入多次。</li>
-</ol>
 </blockquote>
-<pre><code>//在多个入口都引入第三方依赖包时,可以直接使用CommonsChunkPlugin提取公共代码,会直接将login.js和index.js中的公共部分提取出来,生成vendor.js公共部分和webpack运行文件包。
-entry: {
-    login: `${APP_DIR}/login.js`,
-    index: `${APP_DIR}/index.js`
-},
-plugins: [
-    new webpack.optimize.CommonsChunkPlugin({
-        name: &apos;vendor&apos;,
-        filename: &apos;vendor.js&apos;
-    })
-]
 
-//在有的入口引入第三方依赖包,有的入口没有引入共同的第三方依赖包时,用CommonsChunkPlugin只会将webpack运行文件打包进去,只生成webpack运行文件包。
-entry:{
-    login: `${APP_DIR}/login.js`,
-    index: `${APP_DIR}/index.js`
-},
-plugins: [
-    new webpack.optimize.CommonsChunkPlugin({
-        name: &apos;vendor&apos;,
-        filename: &apos;vendor.js&apos;
-    })
-]
-
-//无论是一个入口,还是多个入口,假如有引入了vendor入口(前提是entry入口的chunk名称要与CommonsChunkPlugin中的name名称,也就是chunk名称一致)中的外部依赖包,就会被CommonsChunkPlugin当作公共组件代码部分提取出来,生成vendor.js第三方公共组件代码部分和webpack运行文件包。
-//再可以运用CommonsChunkPlugin中的manifest名称,也就是chunk名称,将webpack运行文件提取出来,生成webpack运行文件包。
-entry:{
-    login: `${APP_DIR}/login.js`,
-    index: `${APP_DIR}/index.js`,
-    &apos;vendor&apos;: [&apos;react&apos;, &apos;react-redux&apos;, &apos;redux&apos;, &apos;react-router&apos;, &apos;react-dom&apos;, &apos;react-addons&apos;, &apos;redux-thunk&apos;, &apos;redux-logger&apos;, &apos;redux-saga&apos;, &apos;antd&apos;, &apos;moment&apos;, &apos;prop-types&apos;]
-},
-plugins: [
-    new webpack.optimize.CommonsChunkPlugin({
-        name: &apos;vendor&apos;,
-        filename: &apos;vendor.js&apos;
-    }),
-    new webpack.optimize.CommonsChunkPlugin({
-        name: &apos;manifest&apos;,
-        chunks: [&apos;vendor&apos;]
-    })
-]
-</code></pre>
       
     </div>
     
