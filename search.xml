@@ -1,130 +1,250 @@
 <?xml version="1.0" encoding="utf-8"?>
-<search>
-  <entry>
-    <title><![CDATA[2018-04-30 webpack打包如何防止第三方依赖包体积过大造成打包速度慢的问题]]></title>
-    <url>%2F2018%2F04%2F30%2Fwebpack%E6%89%93%E5%8C%85%E5%A6%82%E4%BD%95%E9%98%B2%E6%AD%A2%E7%AC%AC%E4%B8%89%E6%96%B9%E4%BE%9D%E8%B5%96%E5%8C%85%E4%BD%93%E7%A7%AF%E8%BF%87%E5%A4%A7%E9%80%A0%E6%88%90%E6%89%93%E5%8C%85%E9%80%9F%E5%BA%A6%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98%2F</url>
-    <content type="text"><![CDATA[为何第三方依赖包会引起打包的体积过大 ES6的模块化机制,当引入外部第三方依赖包时,无论是否已经引入,都会再次将其引入进来,这时候就会存在重复引入导致打包体积过大、打包速度过慢的问题。 如何解决重复引入第三方依赖包,引起的打包体积过大以及打包速度过慢的问题 使用CommonsChunkPlugin提取公共模块,理想状态下是将第三方外部依赖包、业务代码、业务代码中的重复引入的公共部分和webpack的引导程序以及manifest 加载运行外部依赖包都分别打成一个包,减小打包体积,提高打包的速度。 const webpack = require(&quot;webpack&quot;), HtmlWebpackIncludeAssetsPlugin = require(&quot;html-webpack-include-assets-plugin&quot;), HtmlWebpackPlugin = require(&quot;html-webpack-plugin&quot;); const PUBLIC_DIR = &quot;/&quot;; module.exports = { entry: { //login入口有引入testConfig.js以及reactConfig.js login: `${APP_DIR}/login.js`, //index入口也有引入testConfig.js以及reactConfig.js index: `${APP_DIR}/index.js`, //app入口没有引入testConfig.js,也没有引入reactConfig.js app: `${APP_DIR}/app.js`, //mobile入口有引入testConfig.js,却没有引入reactConfig.js mobile: `${APP_DIR}/mobule.js` }, plugins: [ //... //首先我想把四个入口中的公共模块,包括引入的第三方外部依赖包都提取出来 new webpack.optimize.CommonsChunkPlugin({ name: &apos;common&apos;, filename: &apos;js/common.[hash].js&apos; }), new HtmlWebpackPlugin({ publicPath: PUBLIC_DIR, filename: &quot;login.html&quot;, template: `${ROOT_DIR}/login.html`, chunks: [&quot;common&quot;, &quot;login&quot;], inject: &quot;body&quot; }), new HtmlWebpackPlugin({ publicPath: PUBLIC_DIR, filename: &quot;index.html&quot;, template: `${ROOT_DIR}/index.html`, chunks: [&quot;common&quot;, &quot;index&quot;], inject: &quot;body&quot; }), new HtmlWebpackPlugin({ publicPath: PUBLIC_DIR, filename: &quot;app.html&quot;, template: `${ROOT_DIR}/app.html`, chunks: [&quot;common&quot;, &quot;app&quot;], inject: &quot;body&quot; }), new HtmlWebpackPlugin({ publicPath: PUBLIC_DIR, filename: &quot;mobile.html&quot;, template: `${ROOT_DIR}/mobile.html`, chunks: [&quot;common&quot;, &quot;mobile&quot;], inject: &quot;body&quot; }) //发现这样行不通,打包之后,common.[hash].js中只有webpack引导程序以及manifest 加载运行模块的代码,公共部分并没有办法提取出来。 //后来查找原因,原来是CommonsChunkPlugin中的minChunks属性默认设置为公共模块部分最小在全部入口全部引入,才会被提取合成公共代码。 //知道了原因,那就简单了,直接设置minChunks: 2,也就是说只要公共模块最小在两个入口引入,就可以被提取出来作为公共模块部分。 new webpack.optimize.CommonsChunkPlugin({ name: &apos;common&apos;, filename: &apos;js/common.[hash].js&apos;, minChunks: 2 }), ... //这样设置之后发现是可以的,将公共的第三方的外部依赖包、testConfig.js、reactConfig.js、webpack引导程序以及manifest 加载运行模块部分都提取出来,打包至common.[hash].js中,减小了打包的体积,加快了打包速度。 //试想假如我只想提取testConfig.js模块 new webpack.optimize.CommonsChunkPlugin({ name: &apos;common&apos;, filename: &apos;js/common.[hash].js&apos;, //minChunks还可以是一个函数,接收两个参数,module是指入口所引入的每一个模块,count则是指module被几个入口所调用 //module有两个属性: context和resource //context: 模块所存储的目录位置 //resource: 模块所执行的文件名称 //这里就是使用resource模块所执行的文件名称去匹配testConfig,且模块至少被两个入口所引入,这样就可以单独提取testConfig.js文件了 minChunks: function(module, count) { return module.resource &amp;&amp; /testConfig/.test(module.resource) &amp;&amp; count &gt;= 2; } }), ... ], //将第三方公共依赖包与testConfig.js、reactConfig.js这种业务开发所使用的公共模块分离开,使得第三方公共依赖包分离在另一个包下 entry: { //login入口有引入testConfig.js以及reactConfig.js login: `${APP_DIR}/login.js`, //index入口也有引入testConfig.js以及reactConfig.js index: `${APP_DIR}/index.js`, //app入口没有引入testConfig.js,也没有引入reactConfig.js app: `${APP_DIR}/app.js`, //mobile入口有引入testConfig.js,却没有引入reactConfig.js mobile: `${APP_DIR}/mobule.js`, //设置一个第三方外部依赖包的入口 vendor: [&apos;react&apos;, &apos;react-redux&apos;, &apos;redux&apos;, &apos;react-router&apos;, &apos;redux-thunk&apos;, &apos;redux-logger&apos;, &apos;react-dom&apos;, &apos;react-addons&apos;, &apos;prop-types&apos;, &apos;moment&apos;, &apos;antd&apos;, &apos;babel-polyfill&apos;] }, plugins: [ ... //这里无论入口是否引入了vendor入口数组里面的第三方依赖包,它都会对数组里面的第三方外部依赖包进行提取,当然这里的第三方外部依赖包是有限制的,module.context在这里起到了作用,只有模块所存储的路径含有&quot;node_modules&quot;的情况下,也就是说只有是在npm下载的第三方外部依赖包,才会被提取出来。 new webpack.optimize.CommonsChunkPlugin({ name: &apos;vendor&apos;, filename: &apos;js/vendor.[hash].js&apos;, minChunks: function(module, count) { return module.context &amp;&amp; module.context.includes(&quot;nodule_modules&quot;); } }), ... //这样提取第三方外部依赖包是可以的,直接提取到js文件夹里面的vendor.[hash].js //上面所有的提取的公共模块文件加hash的原因,是为了防止浏览器的永久缓存机制,使得文件更新过后,使用的还是原来文件的内容。 ] };]]></content>
+<search> 
+  
+    
+    <entry>
+      <title>2018-04-30 webpack打包如何防止第三方依赖包体积过大造成打包速度慢的问题</title>
+      <link href="/2018/04/30/webpack%E6%89%93%E5%8C%85%E5%A6%82%E4%BD%95%E9%98%B2%E6%AD%A2%E7%AC%AC%E4%B8%89%E6%96%B9%E4%BE%9D%E8%B5%96%E5%8C%85%E4%BD%93%E7%A7%AF%E8%BF%87%E5%A4%A7%E9%80%A0%E6%88%90%E6%89%93%E5%8C%85%E9%80%9F%E5%BA%A6%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/"/>
+      <url>/2018/04/30/webpack%E6%89%93%E5%8C%85%E5%A6%82%E4%BD%95%E9%98%B2%E6%AD%A2%E7%AC%AC%E4%B8%89%E6%96%B9%E4%BE%9D%E8%B5%96%E5%8C%85%E4%BD%93%E7%A7%AF%E8%BF%87%E5%A4%A7%E9%80%A0%E6%88%90%E6%89%93%E5%8C%85%E9%80%9F%E5%BA%A6%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/</url>
+      <content type="html"><![CDATA[<h1 id="为何第三方依赖包会引起打包的体积过大"><a href="#为何第三方依赖包会引起打包的体积过大" class="headerlink" title="为何第三方依赖包会引起打包的体积过大"></a>为何第三方依赖包会引起打包的体积过大</h1><blockquote><p>ES6的模块化机制,当引入外部第三方依赖包时,无论是否已经引入,都会再次将其引入进来,这时候就会存在重复引入导致打包体积过大、打包速度过慢的问题。</p></blockquote><h1 id="如何解决重复引入第三方依赖包-引起的打包体积过大以及打包速度过慢的问题"><a href="#如何解决重复引入第三方依赖包-引起的打包体积过大以及打包速度过慢的问题" class="headerlink" title="如何解决重复引入第三方依赖包,引起的打包体积过大以及打包速度过慢的问题"></a>如何解决重复引入第三方依赖包,引起的打包体积过大以及打包速度过慢的问题</h1><blockquote><ol><li>使用CommonsChunkPlugin提取公共模块,理想状态下是将第三方外部依赖包、业务代码、业务代码中的重复引入的公共部分和webpack的引导程序以及manifest 加载运行外部依赖包都分别打成一个包,减小打包体积,提高打包的速度。</li></ol></blockquote><pre><code>const webpack = require(&quot;webpack&quot;),      HtmlWebpackIncludeAssetsPlugin = require(&quot;html-webpack-include-assets-plugin&quot;),      HtmlWebpackPlugin = require(&quot;html-webpack-plugin&quot;);const PUBLIC_DIR = &quot;/&quot;;module.exports = {    entry: {        //login入口有引入testConfig.js以及reactConfig.js        login: `${APP_DIR}/login.js`,        //index入口也有引入testConfig.js以及reactConfig.js        index: `${APP_DIR}/index.js`,        //app入口没有引入testConfig.js,也没有引入reactConfig.js        app: `${APP_DIR}/app.js`,        //mobile入口有引入testConfig.js,却没有引入reactConfig.js        mobile: `${APP_DIR}/mobule.js`    },    plugins: [        //...        //首先我想把四个入口中的公共模块,包括引入的第三方外部依赖包都提取出来        new webpack.optimize.CommonsChunkPlugin({            name: &apos;common&apos;,            filename: &apos;js/common.[hash].js&apos;        }),        new HtmlWebpackPlugin({            publicPath: PUBLIC_DIR,            filename: &quot;login.html&quot;,            template: `${ROOT_DIR}/login.html`,            chunks: [&quot;common&quot;, &quot;login&quot;],            inject: &quot;body&quot;        }),        new HtmlWebpackPlugin({            publicPath: PUBLIC_DIR,            filename: &quot;index.html&quot;,            template: `${ROOT_DIR}/index.html`,            chunks: [&quot;common&quot;, &quot;index&quot;],            inject: &quot;body&quot;        }),        new HtmlWebpackPlugin({            publicPath: PUBLIC_DIR,            filename: &quot;app.html&quot;,            template: `${ROOT_DIR}/app.html`,            chunks: [&quot;common&quot;, &quot;app&quot;],            inject: &quot;body&quot;        }),        new HtmlWebpackPlugin({            publicPath: PUBLIC_DIR,            filename: &quot;mobile.html&quot;,            template: `${ROOT_DIR}/mobile.html`,            chunks: [&quot;common&quot;, &quot;mobile&quot;],            inject: &quot;body&quot;        })        //发现这样行不通,打包之后,common.[hash].js中只有webpack引导程序以及manifest 加载运行模块的代码,公共部分并没有办法提取出来。        //后来查找原因,原来是CommonsChunkPlugin中的minChunks属性默认设置为公共模块部分最小在全部入口全部引入,才会被提取合成公共代码。        //知道了原因,那就简单了,直接设置minChunks: 2,也就是说只要公共模块最小在两个入口引入,就可以被提取出来作为公共模块部分。        new webpack.optimize.CommonsChunkPlugin({            name: &apos;common&apos;,            filename: &apos;js/common.[hash].js&apos;,            minChunks: 2        }),        ...        //这样设置之后发现是可以的,将公共的第三方的外部依赖包、testConfig.js、reactConfig.js、webpack引导程序以及manifest 加载运行模块部分都提取出来,打包至common.[hash].js中,减小了打包的体积,加快了打包速度。        //试想假如我只想提取testConfig.js模块        new webpack.optimize.CommonsChunkPlugin({            name: &apos;common&apos;,            filename: &apos;js/common.[hash].js&apos;,            //minChunks还可以是一个函数,接收两个参数,module是指入口所引入的每一个模块,count则是指module被几个入口所调用            //module有两个属性: context和resource            //context: 模块所存储的目录位置            //resource: 模块所执行的文件名称            //这里就是使用resource模块所执行的文件名称去匹配testConfig,且模块至少被两个入口所引入,这样就可以单独提取testConfig.js文件了            minChunks: function(module, count) {                return module.resource &amp;&amp; /testConfig/.test(module.resource) &amp;&amp; count &gt;= 2;            }        }),        ...    ],    //将第三方公共依赖包与testConfig.js、reactConfig.js这种业务开发所使用的公共模块分离开,使得第三方公共依赖包分离在另一个包下    entry: {        //login入口有引入testConfig.js以及reactConfig.js        login: `${APP_DIR}/login.js`,        //index入口也有引入testConfig.js以及reactConfig.js        index: `${APP_DIR}/index.js`,        //app入口没有引入testConfig.js,也没有引入reactConfig.js        app: `${APP_DIR}/app.js`,        //mobile入口有引入testConfig.js,却没有引入reactConfig.js        mobile: `${APP_DIR}/mobule.js`,        //设置一个第三方外部依赖包的入口        vendor: [&apos;react&apos;, &apos;react-redux&apos;, &apos;redux&apos;, &apos;react-router&apos;, &apos;redux-thunk&apos;, &apos;redux-logger&apos;, &apos;react-dom&apos;, &apos;react-addons&apos;, &apos;prop-types&apos;, &apos;moment&apos;, &apos;antd&apos;, &apos;babel-polyfill&apos;]    },    plugins: [        ...        //这里无论入口是否引入了vendor入口数组里面的第三方依赖包,它都会对数组里面的第三方外部依赖包进行提取,当然这里的第三方外部依赖包是有限制的,module.context在这里起到了作用,只有模块所存储的路径含有&quot;node_modules&quot;的情况下,也就是说只有是在npm下载的第三方外部依赖包,才会被提取出来。        new webpack.optimize.CommonsChunkPlugin({            name: &apos;vendor&apos;,            filename: &apos;js/vendor.[hash].js&apos;,            minChunks: function(module, count) {                return module.context &amp;&amp; module.context.includes(&quot;nodule_modules&quot;);            }        }),        //这样提取第三方外部依赖包是可以的,直接提取到js文件夹里面的vendor.[hash].js        //上面以及所有的提取的公共模块文件加hash的原因,是为了防止浏览器的永久缓存机制,使得文件更新过后,使用的还是原来文件的内容。        //提取出了第三方外部依赖包之后,由于想到它们不是业务代码,很少进行修改,尽量的多利用浏览器永久缓存机制,所以为了防止每一次构建都会引起它们hash值的改变,不能利用浏览器永久缓存机制,要把webpack引导程序以及manifest 加载运行文件提取到另一个模块包中。        //这里manifest就是隐藏的webpack引导程序以及manifest 加载和运行模块文件的入口        new webpack.optimize.CommonsChunkPlugin({            name: &apos;manifest&apos;,            filename: &apos;js/manifest.[hash].js&apos;,            minChunks: Infinity        }),        //这样提取webpack引导程序以及manifest 加载和运行文件是可以的,直接提取到js文件夹里面的manifest.[hash].js        //再提取出业务使用的像testConfig.js、reactConfig.js公共模块,想着应该可以满足需求,业务代码的公共部分一个模块包,第三方外部依赖包一个模块包,以及webpack引导程序和manfiest 加载运行模块文件一个模块包        new webpack.optimize.CommonsChunkPlugin({            name: &apos;common&apos;,            filename: &apos;js/common.[hash].js&apos;,            minChunks: 2        }),        new HtmlWebpackPlugin({            publicPath: PUBLIC_DIR,            filename: &quot;login.html&quot;,            template: `${ROOT_DIR}/login.html`,            chunks: [&quot;manifest&quot;, &quot;vendor&quot;, &quot;common&quot;, &quot;login&quot;],            inject: &quot;body&quot;        }),        new HtmlWebpackPlugin({            publicPath: PUBLIC_DIR,            filename: &quot;index.html&quot;,            template: `${ROOT_DIR}/index.html`,            chunks: [manifest&quot;, &quot;vendor&quot;, &quot;common&quot;, &quot;index&quot;],            inject: &quot;body&quot;        }),        new HtmlWebpackPlugin({            publicPath: PUBLIC_DIR,            filename: &quot;app.html&quot;,            template: `${ROOT_DIR}/app.html`,            chunks: [manifest&quot;, &quot;vendor&quot;, &quot;common&quot;, &quot;app&quot;],            inject: &quot;body&quot;        }),        new HtmlWebpackPlugin({            publicPath: PUBLIC_DIR,            filename: &quot;mobile.html&quot;,            template: `${ROOT_DIR}/mobile.html`,            chunks: [manifest&quot;, &quot;vendor&quot;, &quot;common&quot;, &quot;mobile&quot;],            inject: &quot;body&quot;        })        //发现这样实现是不可以的,第三方外部依赖包的模块包,webpack引导程序以及manifest 加载和运行模块文件的模块包被打出来了。        //但是common.[hash].js中却没有至少两个入口共同引入业务代码公共模块的部分,还是被分别打进了业务代码模块包中。        //且common.[hash].js中的代码实际上是webpack运行文件以及manfiest 加载和运行模块的文件部分,manfiest.[hash].js也不见了,好像common.[hash].js替换掉了。        //原因到现在还没有找到...        //CommonsChunkPlugin的缺点就在于:即使我使用了vendor的方式去提取公共的第三方外部依赖包模块,还是在每一次构建的时候,都会去进行打包,像我前面说的,第三方外部依赖包模块不像业务代码,很少进行修改。        //所以每一次都去进行打包,还是不妥当的,花费了很多时间在打包第三方外部依赖包上面。    ]};</code></pre><blockquote><ol start="2"><li>使用DllPlugin、DllReferencePlugin、CommonsChunkPlugin以及HtmlWebpackIncludeAssetsPlugin实现对第三方外部依赖包模块、业务代码公共模块以及webpack引导程序和manifest 加载和运行模块文件都分别打成一个包,减小打包体积,提高打包的速度。</li></ol></blockquote><pre><code>//使用DllPlugin和DllReferencePlugin,就不需要像CommonsChunkPlugin那样,对于第三方外部依赖包模块,每次都要去构建打包了,只需要另外配置一个webpack配置文件,就可以实现一劳永逸的体验。//只要没有下载新的第三方外部依赖包模块,就不需要利用webpack.dll.config配置文件去打dll包,总体上减少了每次都构建第三方外部依赖包模块的时间。//webpack.dll.config配置const webpack = require(&quot;webpack&quot;),    path = require(&quot;path&quot;);const PUBLIC_DIR = &quot;/&quot;,    DLL_DIR = path.resolve(__dirname, &quot;../dll&quot;),    ROOT_DIR = path.resolve(__dirname, &quot;../..&quot;);const webpackDllConfig = {    devtool: &quot;source-map&quot;,    entry: {        vendor: [&quot;react&quot;, &quot;react-router&quot;, &quot;redux&quot;, &quot;react-redux&quot;, &quot;redux-thunk&quot;, &quot;redux-logger&quot;, &quot;react-dom&quot;, &quot;react-addons&quot;, &quot;prop-types&quot;, &quot;antd&quot;, &quot;babel-polyfill&quot;]    },    output: {        publicPath: PUBLIC_DIR,        path: DLL_DIR,        filename: &quot;[name].dll.js&quot;,        library: &quot;[name]_[chunkhash]&quot;    },    plugins: [        //防止打包过程中出现错误,中断打包        new webpack.NoEmitOnErrorsPlugin(),        //谈一下DllPlugin,DllPlugin的机制是根据webpack制定的id映射到vendor入口中的第三方外部依赖包模块的路径上,生成映射关系,打包后,生成vendor.dll.js文件和vendor_manifest.dll.json文件,这个文件的内容是webpack制定的id与vendor入口中的第三方外部依赖包模块的映射数据,之后再使用DllReferencePlugin将vendor_manifest.dll.json文件引入到业务代码打包的配置文件的manfiest 加载和运行模块文件中,最后只要将vendor.dll.js引入到你所选择的业务代码入口就可以了。        //vendor.dll.js的作用是,根据vendor_manifest.dll.json中webpack制定的id与vendor入口中第三方外部依赖包模块路径的映射关系,业务代码入口所引入的第三方外部依赖包模块,都会通过vendor.dll.js全局函数进行处理,并根据所引入的第三方外部依赖包模块的id进行使用,且这样并不会把库文件中的代码也打包进去        new webpack.DllPlugin({            path: path.join(DLL_DIR, &quot;[name]_manifest.dll.json&quot;),            //name必须和output的library属性保持一致            name: &quot;[name]_[chunkhash]&quot;,            context: ROOT_DIR        }),        //对打包代码进行压缩        new webpack.optimize.UglifyJsPlugin({            uglifyOptions: {                sourceMap: true,                compress: {                    unused: false,                    dead_code: false,                    warnings: true                },                output: {                    comments: true                }            }        })    ]};export default webpackDllConfig;//业务代码webpack打包配置文件const webpack = require(&quot;webpack&quot;),    path = require(&quot;path&quot;),    //用来复制目录或者目录下的文件的插件    CopyWebpackPlugin = require(&quot;copy-webpack-config&quot;),    //用来将vendor.dll.js插入到业务代码入口的插件,但不可选择插入的入口业务代码文件,默认会将所有的入口业务代码都插入vendor.dll.js    AddAssetHtmlPlugin = require(&quot;add-asset-html-webpack-plugin&quot;),    //用来将vendor.dll.js插入到业务代码入口的插件,可选择插入的入口业务代码文件    HtmlWebpackIncludeAssetsPlugin = require(&quot;html-webpack-include-assets-plugin&quot;),    HtmlWebpackPlugin = require(&quot;html-webpack-plugin&quot;);const PUBLIC_DIR = &quot;/&quot;,    ROOT_DIR = path.resolve(__dirname, &quot;../&quot;),    BUILD_DIR = path.resolve(__dirname, &quot;../build&quot;),    DLL_DIR = path.resolve(__dirname, &quot;../dll&quot;),    IMAGE_DIR = path.resolve(__dirname, &quot;../images&quot;),    MANIFEST_DIR = require(path.resolve(__dirname, `${DLL_DIR}/vendor_manifest.dll.json`));const webpackProdConfig = {    entry: {        //login入口有引入testConfig.js以及reactConfig.js        login: `${APP_DIR}/login.js`,        //index入口也有引入testConfig.js以及reactConfig.js        index: `${APP_DIR}/index.js`,        //app入口没有引入testConfig.js,也没有引入reactConfig.js        app: `${APP_DIR}/app.js`,        //mobile入口有引入testConfig.js,却没有引入reactConfig.js        mobile: `${APP_DIR}/mobule.js`    },    ...    plugins: [        ...        //这里就是将vendor_manfiest.dll.json第三方外部依赖包模块引入到业务代码的打包配置文件的manifest 加载和运行模块文件中        new webpack.DllReferencePlugin({            manifest: MANIFEST_DIR,            context: ROOT_DIR        }),        new CopyWebpackPlugin([{            context: ROOT_DIR,            from: IMAGE_DIR,            to: `${BUILD_DIR}/images`        },{            context: ROOT_DIR,            from: DLL_DIR,            to: `${BUILD_DIR}/dll`        }, {            context: ROOT_DIR,            from: &quot;./dll/vendor.dll.js&quot;,            to: &quot;js/&quot;        }]),        //这里的AddAssetHtmlPlugin会将所有的业务代码入口都引入vendor.dll.js文件        //new AddAssetHtmlPlugin({        //    filepath: &quot;js/vendor.dll.js&quot;,        //    hash: true        //}),        //这里的HtmlWebpackIncludeAssetsPlugin会有选择的将login、index、app入口文件引入vendor.dll.js        //append属性设置为false,是确保vendor.dll.js文件在业务代码包模块之前引入        new HtmlWebpackIncludeAssetsPlugin({            assets: [&quot;js/vendor.dll.js&quot;],            files: [&quot;login.html&quot;, &quot;index.html&quot;, &quot;app.html&quot;],            append: false,            hash: true        }),        //这样第三方外部依赖包模块就生成了,当每次没有新的第三方外部依赖包模块下载时,就可以直接利用vendor.dll.js全局函数处理对引入的webpack制定的id与vendor_manfiest.dll.json中的第三方外部依赖包模块路径的映射进行调用        new webpack.optimize.CommonsChunkPlugin({            name: &quot;common&quot;,            filename: &quot;js/common.[hash].js&quot;,            minChunks: 2        }),        //这里上面在CommonsChunkPlugin部分有介绍过,直接对业务代码中的公共模块部分进行提取,且至少在两个入口中有公共模块的引入        new webpack.optimize.CommonsChunkPlugin({            name: &quot;manifest&quot;,            filename: &quot;js/manifest.[hash].js&quot;,            minChunks: Infinity        }),        //再将webpack引导程序以及manfiest 加载运行模块文件从common.[hash].js文件中提取出来,这样就完成配置了        new HtmlWebpackPlugin({            publicPath: PUBLIC_DIR,            filename: &quot;login.html&quot;,            template: `${ROOT_DIR}/login.html`,            chunks: [&quot;manifest&quot;, &quot;common&quot;, &quot;login&quot;],            inject: &quot;body&quot;        }),        new HtmlWebpackPlugin({            publicPath: PUBLIC_DIR,            filename: &quot;index.html&quot;,            template: `${ROOT_DIR}/index.html`,            chunks: [manifest&quot;, &quot;common&quot;, &quot;index&quot;],            inject: &quot;body&quot;        }),        new HtmlWebpackPlugin({            publicPath: PUBLIC_DIR,            filename: &quot;app.html&quot;,            template: `${ROOT_DIR}/app.html`,            chunks: [manifest&quot;, &quot;common&quot;, &quot;app&quot;],            inject: &quot;body&quot;        }),        new HtmlWebpackPlugin({            publicPath: PUBLIC_DIR,            filename: &quot;mobile.html&quot;,            template: `${ROOT_DIR}/mobile.html`,            chunks: [manifest&quot;, &quot;common&quot;, &quot;mobile&quot;],            inject: &quot;body&quot;        })    ]};//这种由DllPlugin、DllReferencePlugin和HtmlWebpackIncludAssetsPlugin打包第三方外部依赖包模块。//由CommonsChunkPlugin提取业务代码公共模块部分和webpack引导程序以及manifest 加载运行模块文件的方式。//很好的实现了对第三方外部依赖包模块、业务代码公共模块以及webpack引导程序和manifest 加载和运行模块文件的打包,减小了打包体积,提高了打包的速度。</code></pre>]]></content>
+      
       <categories>
-        <category>webpack</category>
+          
+          <category> webpack </category>
+          
       </categories>
-      <tags>
-        <tag>webpack</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title><![CDATA[2018-04-30 关于闭包]]></title>
-    <url>%2F2018%2F04%2F30%2F%E5%85%B3%E4%BA%8E%E9%97%AD%E5%8C%85%2F</url>
-    <content type="text"><![CDATA[什么是回调函数 A函数作为B函数的参数,并在B函数中执行,A函数就是回调函数。 function setTimer(fn, timer) { fn(timer); } //function timer就是function setTimer的回调函数 setTimer(function timer(time) { console.log(time); }, 1000); 回调函数也分同步和异步,上例就是同步,而像setTimeout,setInterval中这种牵扯到消息队列(异步队列),Event Loop的回调函数来说,就是异步。 什么是闭包 “A函数中包含B函数,并返回B函数,调用B函数可以使用A函数作用域中定义的变量”,B函数就是闭包,示例如下: function foo() { let _name = &quot;Gary&quot;; function bar() { console.log(`name: ${_name}`); } return bar; } //foo函数执行之后,作用域会被销毁,随之而然的作用域中定义的变量应该会被销毁,并被引擎垃圾回收机制回收, //但是在这里神奇的事情发生了,foo函数作用域并没有被销毁之后回收,而是还存在于内存中,并被bar使用,这里就形成了闭包。 let bar = foo(); bar(); 还有一种形式是这样 function foo() { let _name = &quot;Gary&quot;; function bar() { console.log(`name: ${_name}`); } baz(bar); } //这里在foo函数执行之后,按理来说,foo函数中作用域,以及其中_name变量,都会被销毁,并随后被引擎垃圾回收机制回收。 //但是神奇的是,这里的作用域并没有被销毁,而其中的_name变量也没有被销毁,当然也没有被引擎垃圾回收机制回收,而还是存储于内存中,并被bar使用,这里就形成了闭包。 function baz(fn) { fn(); } foo();]]></content>
+      
+      
+        <tags>
+            
+            <tag> webpack </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    <entry>
+      <title>2018-04-30 关于闭包</title>
+      <link href="/2018/04/30/%E5%85%B3%E4%BA%8E%E9%97%AD%E5%8C%85/"/>
+      <url>/2018/04/30/%E5%85%B3%E4%BA%8E%E9%97%AD%E5%8C%85/</url>
+      <content type="html"><![CDATA[<h1 id="什么是回调函数"><a href="#什么是回调函数" class="headerlink" title="什么是回调函数"></a>什么是回调函数</h1><blockquote><p>A函数作为B函数的参数,并在B函数中执行,A函数就是回调函数。</p></blockquote><pre><code>function setTimer(fn, timer) {    fn(timer);}//function timer就是function setTimer的回调函数setTimer(function timer(time) {    console.log(time);}, 1000);</code></pre><blockquote><p>回调函数也分同步和异步,上例就是同步,而像setTimeout,setInterval中这种牵扯到消息队列(异步队列),Event Loop的回调函数来说,就是异步。</p></blockquote><h1 id="什么是闭包"><a href="#什么是闭包" class="headerlink" title="什么是闭包"></a>什么是闭包</h1><blockquote><p>“A函数中包含B函数,并返回B函数,调用B函数可以使用A函数作用域中定义的变量”,B函数就是闭包,示例如下:</p></blockquote><pre><code>function foo() {    let _name = &quot;Gary&quot;;    function bar() {        console.log(`name: ${_name}`);    }    return bar;}//foo函数执行之后,作用域会被销毁,随之而然的作用域中定义的变量应该会被销毁,并被引擎垃圾回收机制回收,//但是在这里神奇的事情发生了,foo函数作用域并没有被销毁之后回收,而是还存在于内存中,并被bar使用,这里就形成了闭包。let bar = foo();bar();</code></pre><blockquote><p>还有一种形式是这样</p></blockquote><pre><code>function foo() {    let _name = &quot;Gary&quot;;    function bar() {        console.log(`name: ${_name}`);    }    baz(bar);}//这里在foo函数执行之后,按理来说,foo函数中作用域,以及其中_name变量,都会被销毁,并随后被引擎垃圾回收机制回收。//但是神奇的是,这里的作用域并没有被销毁,而其中的_name变量也没有被销毁,当然也没有被引擎垃圾回收机制回收,而还是存储于内存中,并被bar使用,这里就形成了闭包。function baz(fn) {    fn();}foo();</code></pre>]]></content>
+      
       <categories>
-        <category>闭包</category>
+          
+          <category> 闭包 </category>
+          
       </categories>
-      <tags>
-        <tag>闭包</tag>
-        <tag>回调函数</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title><![CDATA[2018-04-27 关于异步]]></title>
-    <url>%2F2018%2F04%2F27%2F%E5%85%B3%E4%BA%8E%E5%BC%82%E6%AD%A5%2F</url>
-    <content type="text"><![CDATA[什么是异步 异步在JS中的表现分为三类: 时间延迟,比如setTimeout,setInterval这种时间处理函数 事件处理,比如onClick(点击事件),onChange(输入框内容改变回调),onMouseover(鼠标移入事件),onMouseout(鼠标移出事件),onMouseEnter(鼠标移入事件),onMouseLeave(鼠标移出事件)等等 xhr、fetch请求等等 为什么会出现异步 由于JS是单线程(同一时间,只能做一件事情)的语言,为了实现时间延迟、事件处理和xhr、fetch请求处理这些必须是异步的操作,JS必须处理单线程怎样异步的问题。 为什么JS要使用单线程 JS使用单线程,是由于JS中不仅仅有ECMAScript,还有DOM(Document Object Modal),html渲染DOM,JS也可以动态改变DOM,假如JS不是单线程,同一时间可以处理多件事情,html渲染DOM和JS动态改变DOM就会混乱,浏览器会不知道是先渲染html DOM,还是先执行JS动态改变DOM,即使是实现了多线程的WebWorker,也没有触及DOM部分。 关于异步 JS使用单线程,运行时,先会运行同步代码,如果遇到异步代码,就会先将异步代码放进内存的异步队列中,待到同步代码运行完毕,就会去轮询异步队列中的异步代码。 假如异步闭包中还存在异步闭包,在异步队列中,就会将里层的异步闭包push到外层的异步闭包后面,待到外层的异步闭包执行完毕之后,再执行里层的异步闭包。 使用异步出现的问题 JS使用异步解决了JS单线程的问题,但是异步却又引起了另外一个问题,就是异步情况下的同步执行,尤其是xhr、fetch的请求,由于响应时间不确定,很容易引起异步执行混乱的问题。 异步的演变过程setTimeout callback 之前还没有使用nodejs的时候,解决异步问题基本上使用的是setTimeout使用异步闭包去解决异步的方式,比如在react中,setState就是异步执行的,假如name的初始值为Gary componentWillMount() { this.setState({ name: &quot;Yinwk&quot; }); this.setState({ name: &quot;CLAY&quot; }); //这时候由于setState是异步的,所以会先执行同步代码,也就是说这时候this.state.name的值依然为Gary console.log(this.state.name); } componentWillMount() { setTimeout(function timer(){ this.setState({ name: &quot;Yinwk&quot; }); //这时候this.state.name的值就变为了Yinwk console.log(this.state.name); setTimeout(function timer(){ this.setState({ name: &quot;CLAY&quot; }); //这时候this.state.name的值就变为了CLAY console.log(this.state.name); }.bind(this), 0); }.bind(this), 0) } EventEmitter(并不是异步问题的解决方案) nodejs出现之后,event模块有一个类——EventEmitter,一直以为它是一个消息管理模块,跟Event Loop异步队列有着千丝万缕的关系,后来看了源码,发现它并不是一个消息管理模块,跟消息队列没有任何关系,on/emit只是一个监听的观察者模式,on时添加/删除listener,emit时运行回调函数。还是拿上一个例子进行举例,假如name的初始值为Gary import {EventEmitter} from &quot;events&quot;; const eventEmitter = new EventEmitter(); componentWillMount(){ eventEmitter.on(&quot;gary&quot;, () =&gt; { this.setState({ name: &quot;Yinwk&quot; }); console.log(this.state.name); }); //这里打印出的this.state.name还是Gary,由于EventEmitter跟消息队列没有任何关系,所以并不是异步,只是一个监听的观察者模式,所以是同步的 eventEmitter.emit(&quot;gary&quot;); } Promise ES6语法发布之后,Promise成为了新的解决异步问题的方案,实质的也是利用异步闭包来解决异步问题。还是拿最初的例子进行举例,假如name的初始值为Gary ComponentWillMount() { (function iifeSetName() { return new Promise(function promise(resolve, reject) { this.setState({ name: &quot;Yinwk&quot; }); resolve(); }.bind(this)); }.bind(this))().then(function resolve() { //这里打印出的this.state.name就是Yinwk console.log(this.state.name); }.bind(this), function reject() { }.bind(this)); } yield and * 再到后来最新的解决异步的方案:yield *配合Promise,也就是Generator控制迭代器,执行时每执行到yield时,就会停止执行并返回一个Iterator迭代器,且会保留上下文,直到下次运行,社区tj大神的co函数同步读取文件就是使用了yield *配合Promise const fs = require(&quot;fs&quot;); function readFile(file){ return new Promise((resolve, reject) =&gt; { fs.readFile((err, data) =&gt; { if(err) reject(err); resolve(data); }); }); } function *gc() { let a = yield readFile(&quot;../data/file_first.txt&quot;); console.log(a); let b = yield readFile(&quot;../data/file_second.txt&quot;); console.log(b); return b; } co(gc).then(function resolve(data){ console.log(data); }.bind(this), function reject(){ }.bind(this)); //co函数利用yield * + Promise同步读取文件 function co(gc_co){ let gc = gc_co(); return new Promise((resolve, reject) =&gt; { //这里实现一个Generator控制迭代器的迭代循环 (function readData(data){ let gcNext = gc.next(data), value = gcNext.value, done = gcNext.done; if(done) { resolve(value); } else { value.then(readData, reject); } })(); }); } async and await 现如今的推出的解决异步问题的最终解决方案:async和await,很好的解决了异步的问题,且当await Promise时,返回的是fulfilled和rejected返回的结果。还是拿最初的例子进行举例,假如name的初始值为Gary ComponentWillMount() { (async function iifeSetName() { await this.setState({ name: &quot;Yinwk&quot; }); //这里打印出的this.state.name就是Yinwk await console.log(this.state.name); }.bind(this))(); } 还可以这样 ComponentWillMount() { (async function iifeSetName() { let name = await new Promise((resolve, reject) =&gt; { this.setState({ name: &quot;Yinwk&quot; }); resolve(); }).then(()=&gt;{ return this.state.name; }, ()=&gt;{ }); //这里打印出的this.state.name就是Yinwk await console.log(name); //这里打印出的this.state.name还是Yinwk await console.log(this.state.name); }.bind(this))(); }]]></content>
+      
+      
+        <tags>
+            
+            <tag> 闭包 </tag>
+            
+            <tag> 回调函数 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    <entry>
+      <title>2018-04-27 关于异步</title>
+      <link href="/2018/04/27/%E5%85%B3%E4%BA%8E%E5%BC%82%E6%AD%A5/"/>
+      <url>/2018/04/27/%E5%85%B3%E4%BA%8E%E5%BC%82%E6%AD%A5/</url>
+      <content type="html"><![CDATA[<h1 id="什么是异步"><a href="#什么是异步" class="headerlink" title="什么是异步"></a>什么是异步</h1><blockquote><p>异步在JS中的表现分为三类:</p><ol><li>时间延迟,比如setTimeout,setInterval这种时间处理函数</li><li>事件处理,比如onClick(点击事件),onChange(输入框内容改变回调),onMouseover(鼠标移入事件),onMouseout(鼠标移出事件),onMouseEnter(鼠标移入事件),onMouseLeave(鼠标移出事件)等等</li><li>xhr、fetch请求等等</li></ol></blockquote><h1 id="为什么会出现异步"><a href="#为什么会出现异步" class="headerlink" title="为什么会出现异步"></a>为什么会出现异步</h1><blockquote><p>由于JS是单线程(同一时间,只能做一件事情)的语言,为了实现时间延迟、事件处理和xhr、fetch请求处理这些必须是异步的操作,JS必须处理单线程怎样异步的问题。</p></blockquote><h1 id="为什么JS要使用单线程"><a href="#为什么JS要使用单线程" class="headerlink" title="为什么JS要使用单线程"></a>为什么JS要使用单线程</h1><blockquote><p>JS使用单线程,是由于JS中不仅仅有ECMAScript,还有DOM(Document Object Modal),html渲染DOM,JS也可以动态改变DOM,假如JS不是单线程,同一时间可以处理多件事情,html渲染DOM和JS动态改变DOM就会混乱,浏览器会不知道是先渲染html DOM,还是先执行JS动态改变DOM,即使是实现了多线程的WebWorker,也没有触及DOM部分。</p></blockquote><h1 id="关于异步"><a href="#关于异步" class="headerlink" title="关于异步"></a>关于异步</h1><blockquote><p>JS使用单线程,运行时,先会运行同步代码,如果遇到异步代码,就会先将异步代码放进内存的异步队列中,待到同步代码运行完毕,就会去轮询异步队列中的异步代码。</p></blockquote><blockquote><p>假如异步闭包中还存在异步闭包,在异步队列中,就会将里层的异步闭包push到外层的异步闭包后面,待到外层的异步闭包执行完毕之后,再执行里层的异步闭包。</p></blockquote><h1 id="使用异步出现的问题"><a href="#使用异步出现的问题" class="headerlink" title="使用异步出现的问题"></a>使用异步出现的问题</h1><blockquote><p>JS使用异步解决了JS单线程的问题,但是异步却又引起了另外一个问题,就是异步情况下的同步执行,尤其是xhr、fetch的请求,由于响应时间不确定,很容易引起异步执行混乱的问题。</p></blockquote><h1 id="异步的演变过程"><a href="#异步的演变过程" class="headerlink" title="异步的演变过程"></a>异步的演变过程</h1><h4 id="setTimeout-callback"><a href="#setTimeout-callback" class="headerlink" title="setTimeout callback"></a>setTimeout callback</h4><blockquote><p>之前还没有使用nodejs的时候,解决异步问题基本上使用的是setTimeout使用异步闭包去解决异步的方式,比如在react中,setState就是异步执行的,假如name的初始值为Gary</p></blockquote><pre><code>componentWillMount() {    this.setState({        name: &quot;Yinwk&quot;    });    this.setState({        name: &quot;CLAY&quot;    });    //这时候由于setState是异步的,所以会先执行同步代码,也就是说这时候this.state.name的值依然为Gary    console.log(this.state.name);}componentWillMount() {    setTimeout(function timer(){        this.setState({            name: &quot;Yinwk&quot;        });        //这时候this.state.name的值就变为了Yinwk        console.log(this.state.name);        setTimeout(function timer(){            this.setState({                name: &quot;CLAY&quot;            });            //这时候this.state.name的值就变为了CLAY            console.log(this.state.name);        }.bind(this), 0);    }.bind(this), 0)}</code></pre><h4 id="EventEmitter-并不是异步问题的解决方案"><a href="#EventEmitter-并不是异步问题的解决方案" class="headerlink" title="EventEmitter(并不是异步问题的解决方案)"></a>EventEmitter(并不是异步问题的解决方案)</h4><blockquote><p>nodejs出现之后,event模块有一个类——EventEmitter,一直以为它是一个消息管理模块,跟Event Loop异步队列有着千丝万缕的关系,后来看了源码,发现它并不是一个消息管理模块,跟消息队列没有任何关系,on/emit只是一个监听的观察者模式,on时添加/删除listener,emit时运行回调函数。还是拿上一个例子进行举例,假如name的初始值为Gary</p></blockquote><pre><code>import {EventEmitter} from &quot;events&quot;;const eventEmitter = new EventEmitter();componentWillMount(){    eventEmitter.on(&quot;gary&quot;, () =&gt; {        this.setState({            name: &quot;Yinwk&quot;        });        console.log(this.state.name);    });    //这里打印出的this.state.name还是Gary,由于EventEmitter跟消息队列没有任何关系,所以并不是异步,只是一个监听的观察者模式,所以是同步的    eventEmitter.emit(&quot;gary&quot;);}</code></pre><h4 id="Promise"><a href="#Promise" class="headerlink" title="Promise"></a>Promise</h4><blockquote><p>ES6语法发布之后,Promise成为了新的解决异步问题的方案,实质的也是利用异步闭包来解决异步问题。还是拿最初的例子进行举例,假如name的初始值为Gary</p></blockquote><pre><code>ComponentWillMount() {    (function iifeSetName() {        return new Promise(function promise(resolve, reject) {            this.setState({                name: &quot;Yinwk&quot;            });            resolve();        }.bind(this));    }.bind(this))().then(function resolve() {        //这里打印出的this.state.name就是Yinwk        console.log(this.state.name);    }.bind(this), function reject() {    }.bind(this));   }</code></pre><h4 id="yield-and"><a href="#yield-and" class="headerlink" title="yield and *"></a>yield and *</h4><blockquote><p>再到后来最新的解决异步的方案:yield *配合Promise,也就是Generator控制迭代器,执行时每执行到yield时,就会停止执行并返回一个Iterator迭代器,且会保留上下文,直到下次运行,社区tj大神的co函数同步读取文件就是使用了yield *配合Promise</p></blockquote><pre><code>const fs = require(&quot;fs&quot;);function readFile(file){    return new Promise((resolve, reject) =&gt; {        fs.readFile((err, data) =&gt; {            if(err) reject(err);            resolve(data);        });           });}function *gc() {    let a = yield readFile(&quot;../data/file_first.txt&quot;);    console.log(a);    let b = yield readFile(&quot;../data/file_second.txt&quot;);    console.log(b);    return b;}co(gc).then(function resolve(data){    console.log(data);}.bind(this), function reject(){}.bind(this));//co函数利用yield * + Promise同步读取文件function co(gc_co){    let gc = gc_co();    return new Promise((resolve, reject) =&gt; {        //这里实现一个Generator控制迭代器的迭代循环        (function readData(data){            let gcNext = gc.next(data),                value = gcNext.value,                done = gcNext.done;            if(done) {                resolve(value);            } else {                value.then(readData, reject);            }        })();    });}</code></pre><h4 id="async-and-await"><a href="#async-and-await" class="headerlink" title="async and await"></a>async and await</h4><blockquote><p>现如今的推出的解决异步问题的最终解决方案:async和await,很好的解决了异步的问题,且当await Promise时,返回的是fulfilled和rejected返回的结果。还是拿最初的例子进行举例,假如name的初始值为Gary</p></blockquote><pre><code>ComponentWillMount() {    (async function iifeSetName() {        await this.setState({            name: &quot;Yinwk&quot;        });        //这里打印出的this.state.name就是Yinwk        await console.log(this.state.name);    }.bind(this))();}</code></pre><blockquote><p>还可以这样</p></blockquote><pre><code>ComponentWillMount() {    (async function iifeSetName() {        let name = await new Promise((resolve, reject) =&gt; {            this.setState({                name: &quot;Yinwk&quot;            });            resolve();        }).then(()=&gt;{            return this.state.name;        }, ()=&gt;{        });        //这里打印出的this.state.name就是Yinwk        await console.log(name);        //这里打印出的this.state.name还是Yinwk        await console.log(this.state.name);    }.bind(this))();}    </code></pre>]]></content>
+      
       <categories>
-        <category>异步</category>
+          
+          <category> 异步 </category>
+          
       </categories>
-      <tags>
-        <tag>异步</tag>
-        <tag>Promise</tag>
-        <tag>async await</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title><![CDATA[2018-04-27 关于webpack]]></title>
-    <url>%2F2018%2F04%2F27%2F%E5%85%B3%E4%BA%8Ewebpack%2F</url>
-    <content type="text"><![CDATA[关于webpack 使用webpack已有大半年,从webpack 1.0直到4.0,都有尝试过,每次升级都比较痛苦,今天梳理一下不同点 webpack 1.0 webpack是现如今非常流行、易用语义化很明显的打包压缩工具,废话不多说,直接上代码(会有明确的注释)。PS：react使用的是CommonJS模块化语法 const webpack = require(&quot;webpack&quot;), //对于路径管理的外部依赖包 path = require(&quot;path&quot;), //自动添加css扩展头以兼容低版本浏览器的外部依赖包 autoprefixer = require(&quot;autoprefixer&quot;), //处理打包css的webpack plugin插件 ExtractTextPlugin = require(&quot;extract-text-webpack-plugin&quot;), //处理打包html的webpack plugin插件 HtmlWebpackPlugin = require(&quot;html-webpack-plugin&quot;); const PUBLIC_DIR = &quot;/&quot;, //路径巡航,先进入webpack文件所在的路径,然后再进入根路径,我这里是把webpack配置文件放在了根路径底下的一个文件夹里面 ROOT_DIR = path.resolve(__dirname, &quot;../&quot;)]]></content>
+      
+      
+        <tags>
+            
+            <tag> 异步 </tag>
+            
+            <tag> Promise </tag>
+            
+            <tag> async await </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    <entry>
+      <title>2018-04-27 关于webpack</title>
+      <link href="/2018/04/27/%E5%85%B3%E4%BA%8Ewebpack/"/>
+      <url>/2018/04/27/%E5%85%B3%E4%BA%8Ewebpack/</url>
+      <content type="html"><![CDATA[<h1 id="关于webpack"><a href="#关于webpack" class="headerlink" title="关于webpack"></a>关于webpack</h1><blockquote><p>使用webpack已有大半年,从webpack 1.0直到4.0,都有尝试过,每次升级都比较痛苦,今天梳理一下不同点</p></blockquote><h2 id="webpack-1-0"><a href="#webpack-1-0" class="headerlink" title="webpack 1.0"></a>webpack 1.0</h2><blockquote><p>webpack是现如今非常流行、易用语义化很明显的打包压缩工具,废话不多说,直接上代码(会有明确的注释)。<br>PS：react使用的是CommonJS模块化语法</p></blockquote><pre><code>const webpack = require(&quot;webpack&quot;),    //对于路径管理的外部依赖包    path = require(&quot;path&quot;),    //自动添加css扩展头以兼容低版本浏览器的外部依赖包    autoprefixer = require(&quot;autoprefixer&quot;),    //处理打包css的webpack plugin插件    ExtractTextPlugin = require(&quot;extract-text-webpack-plugin&quot;),    //处理打包html的webpack plugin插件    HtmlWebpackPlugin = require(&quot;html-webpack-plugin&quot;);const PUBLIC_DIR = &quot;/&quot;,    //路径巡航,先进入webpack文件所在的路径,然后再进入根路径,我这里是把webpack配置文件放在了根路径底下的一个文件夹里面    ROOT_DIR = path.resolve(__dirname, &quot;../&quot;)</code></pre>]]></content>
+      
       <categories>
-        <category>webpack or webpack-dev-server</category>
+          
+          <category> webpack or webpack-dev-server </category>
+          
       </categories>
-      <tags>
-        <tag>webpack</tag>
-        <tag>webpack-dev-server</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title><![CDATA[2018-04-27 关于webstorm]]></title>
-    <url>%2F2018%2F04%2F27%2F%E5%85%B3%E4%BA%8Ewebstorm%2F</url>
-    <content type="text"><![CDATA[webstorm license server 从毕业就开始使用webstorm,从webstorm 11到webstorm 2017,再到现在的webstorm 2018,webstorm IDE功能越来越强大,但是我从来不使用正版,而今天就给大家介绍一下,在使用盗版过程中最大的困难——license server。在最初的时候,我也是百度的一些Activation code,后来发现这些Activation code极不稳定,可能是一个Activation code只能在一个终端使用吧,我放弃了使用Activation code的方式。 后来,在Webstorm吧找到了一种可以设置试用期到2099年的方法:改变本地的日期时间至2099年11月30日,然后安装webstorm,选择试用,试用期一个月,这时候你的试用期就到了2099年的12月31日。假如你已经安装了webstorm,直接找到WINDOWS系统,C:/Users(用户)/你的WINDOWS电脑用户名/.Webstorm2017.2/config/eval,直接将eval文件删掉,重新打开webstorm,更改本地日期,后面的操作就同上了。直到2017.3版本之前,使用的很舒服,到了2017.3版本,JetBrains发现了这个漏洞,进行了修补,由此也放弃了使用这种方式。 再之后,就开始使用license server,使用的license server如下: http://idea.imsxm.com (2017.3.3版本极其之前版本可用) http://idea.iteblog.com/key.php (2017.1可用) http://www.aku.vn/idea (2017.1可用) http://idea.ibdyr.com (2017.3.3版本极其之前版本可用) 再后来,就开始使用本地nginx反向代理http://idea.imsxm.com,将下面的配置放进server中: location /rpc { proxy_pass http://idea.imsxm.com/rpc; proxy_redirect off; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; } 现在连本地nginx反向代理都失效了,jetbrains在2017.3.4版本使用了ip地址动态封禁,经过我很长时间的寻找,找到了现在在2018版本之后都可使用的license server: http://www.activejetbrains.ml 最新的license server转自网上的一篇文章,来源于https://www.imsxm.com/jetbrains-license-server.html]]></content>
+      
+      
+        <tags>
+            
+            <tag> webpack </tag>
+            
+            <tag> webpack-dev-server </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    <entry>
+      <title>2018-04-27 关于webstorm</title>
+      <link href="/2018/04/27/%E5%85%B3%E4%BA%8Ewebstorm/"/>
+      <url>/2018/04/27/%E5%85%B3%E4%BA%8Ewebstorm/</url>
+      <content type="html"><![CDATA[<h1 id="webstorm-license-server"><a href="#webstorm-license-server" class="headerlink" title="webstorm license server"></a>webstorm license server</h1><blockquote><p>从毕业就开始使用webstorm,从webstorm 11到webstorm 2017,再到现在的webstorm 2018,webstorm IDE功能越来越强大,但是我从来不使用正版,而今天就给大家介绍一下,在使用盗版过程中最大的困难——license server。在最初的时候,我也是百度的一些Activation code,后来发现这些Activation code极不稳定,可能是一个Activation code只能在一个终端使用吧,我放弃了使用Activation code的方式。</p></blockquote><blockquote><p>后来,在<b>Webstorm吧</b>找到了一种可以设置试用期到2099年的方法:改变本地的日期时间至2099年11月30日,然后安装webstorm,选择试用,试用期一个月,这时候你的试用期就到了2099年的12月31日。假如你已经安装了webstorm,直接找到WINDOWS系统,C:/Users(用户)/你的WINDOWS电脑用户名/.Webstorm2017.2/config/eval,直接将eval文件删掉,重新打开webstorm,更改本地日期,后面的操作就同上了。直到2017.3版本之前,使用的很舒服,到了2017.3版本,JetBrains发现了这个漏洞,进行了修补,由此也放弃了使用这种方式。</p></blockquote><blockquote><p>再之后,就开始使用license server,使用的license server如下:</p></blockquote><pre><code>http://idea.imsxm.com (2017.3.3版本极其之前版本可用)http://idea.iteblog.com/key.php (2017.1可用)http://www.aku.vn/idea (2017.1可用)http://idea.ibdyr.com (2017.3.3版本极其之前版本可用)</code></pre><blockquote><p>再后来,就开始使用本地nginx反向代理<a href="http://idea.imsxm.com,将下面的配置放进server中" target="_blank" rel="noopener">http://idea.imsxm.com,将下面的配置放进server中</a>:</p></blockquote><pre><code>location /rpc {        proxy_pass   http://idea.imsxm.com/rpc;        proxy_redirect             off;        proxy_set_header           Host $host;        proxy_set_header           X-Real-IP $remote_addr;        proxy_set_header           X-Forwarded-For $proxy_add_x_forwarded_for;}</code></pre><blockquote><p>现在连本地nginx反向代理都失效了,jetbrains在2017.3.4版本使用了ip地址动态封禁,经过我很长时间的寻找,找到了现在在2018版本之后都可使用的license server:</p></blockquote><pre><code>http://www.activejetbrains.ml</code></pre><blockquote><p>最新的license server转自网上的一篇文章,来源于<a href="https://www.imsxm.com/jetbrains-license-server.html" target="_blank" rel="noopener">https://www.imsxm.com/jetbrains-license-server.html</a></p></blockquote>]]></content>
+      
       <categories>
-        <category>webstorm</category>
+          
+          <category> webstorm </category>
+          
       </categories>
-      <tags>
-        <tag>webstorm</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title><![CDATA[react思想]]></title>
-    <url>%2F2018%2F04%2F26%2Freact%E6%80%9D%E6%83%B3%2F</url>
-    <content type="text"><![CDATA[React主体思想 React的主体思想:数据驱动。就是利用数据的变化,来引起View视图的变化。React使用的是jsx(js + xml)语法和虚拟DOM,虚拟DOM是React做的一件很革新的事情,在React之前,DOM操作十分昂贵,大量的DOM操作耗费了web网站大量的时间,性能比较低。React使用Javascript模拟DOM,来进行View视图的渲染,虚拟DOM节点发生变化时,React首先会利用diff算法对前后的虚拟DOM树进行对比,一旦发现有所不同,就会引起虚拟DOM从根结点进行重新刷新,而浏览器实际操作DOM的仅仅是diff部分,尽管每一次虚拟DOM都会从根结点进行重新刷新,但是由于是内存数据,所以性能很高,而浏览器实际操作DOM的仅仅是diff的部分,所以很大程度上提高了web网站的性能。]]></content>
+      
+      
+        <tags>
+            
+            <tag> webstorm </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    <entry>
+      <title>react思想</title>
+      <link href="/2018/04/26/react%E6%80%9D%E6%83%B3/"/>
+      <url>/2018/04/26/react%E6%80%9D%E6%83%B3/</url>
+      <content type="html"><![CDATA[<h1 id="React主体思想"><a href="#React主体思想" class="headerlink" title="React主体思想"></a>React主体思想</h1><blockquote><p>React的主体思想:数据驱动。就是利用数据的变化,来引起View视图的变化。React使用的是jsx(js + xml)语法和虚拟DOM,虚拟DOM是React做的一件很革新的事情,在React之前,DOM操作十分昂贵,大量的DOM操作耗费了web网站大量的时间,性能比较低。React使用Javascript模拟DOM,来进行View视图的渲染,虚拟DOM节点发生变化时,React首先会利用diff算法对前后的虚拟DOM树进行对比,一旦发现有所不同,就会引起虚拟DOM从根结点进行重新刷新,而浏览器实际操作DOM的仅仅是diff部分,尽管每一次虚拟DOM都会从根结点进行重新刷新,但是由于是内存数据,所以性能很高,而浏览器实际操作DOM的仅仅是diff的部分,所以很大程度上提高了web网站的性能。</p></blockquote>]]></content>
+      
       <categories>
-        <category>react</category>
+          
+          <category> react </category>
+          
       </categories>
-      <tags>
-        <tag>react</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title><![CDATA[2018-04-26 Javascript 0.1 + 0.2 !== 0.3]]></title>
-    <url>%2F2018%2F04%2F26%2Fjavascript-0-1-0-2-0-3%2F</url>
-    <content type="text"><![CDATA[为什么0.1 + 0.2 !== 0.3 Javascript的浮点数类型不够精确,双精度浮点数类型的二进制位数加上符号位为53位,也就是说0.1的二进制树加上0.2的二进制数,转化为十进制数为0.30000000000000004,所以0.1 + 0.2 !== 0.3 怎么解决0.1 + 0.2 !== 0.3的问题 最好的方法是设置一个误差”机器精度”的范围值,与0.1 + 0.2 - 0.3的值进行比较,假如不超过这个范围就返回true,如果超过这个范围就返回false,可以利用ES6给开发者提供的一个新属性EPSILON,这个属性正好等于2^-52,无限接近于0,但不等于0 0.1 + 0.2 - 0.3 &lt; Number.EPSILON 也可以利用保留小数的方式进行解决,比如toFixed和toPrecision parseFloat((0.1 + 0.2).toFixed(1)) === 0.3]]></content>
+      
+      
+        <tags>
+            
+            <tag> react </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    <entry>
+      <title>2018-04-26 Javascript 0.1 + 0.2 !== 0.3</title>
+      <link href="/2018/04/26/javascript-0-1-0-2-0-3/"/>
+      <url>/2018/04/26/javascript-0-1-0-2-0-3/</url>
+      <content type="html"><![CDATA[<h1 id="为什么0-1-0-2-0-3"><a href="#为什么0-1-0-2-0-3" class="headerlink" title="为什么0.1 + 0.2 !== 0.3"></a>为什么0.1 + 0.2 !== 0.3</h1><blockquote><p>Javascript的浮点数类型不够精确,双精度浮点数类型的二进制位数加上符号位为53位,也就是说0.1的二进制树加上0.2的二进制数,转化为十进制数为0.30000000000000004,所以0.1 + 0.2 !== 0.3</p></blockquote><h1 id="怎么解决0-1-0-2-0-3的问题"><a href="#怎么解决0-1-0-2-0-3的问题" class="headerlink" title="怎么解决0.1 + 0.2 !== 0.3的问题"></a>怎么解决0.1 + 0.2 !== 0.3的问题</h1><blockquote><p>最好的方法是设置一个误差”机器精度”的范围值,与0.1 + 0.2 - 0.3的值进行比较,假如不超过这个范围就返回true,如果超过这个范围就返回false,可以利用ES6给开发者提供的一个新属性EPSILON,这个属性正好等于2^-52,无限接近于0,但不等于0</p></blockquote><pre><code>0.1 + 0.2 - 0.3 &lt; Number.EPSILON</code></pre><blockquote><p>也可以利用保留小数的方式进行解决,比如toFixed和toPrecision</p></blockquote><pre><code>parseFloat((0.1 + 0.2).toFixed(1)) === 0.3</code></pre>]]></content>
+      
       <categories>
-        <category>Javascript</category>
+          
+          <category> Javascript </category>
+          
       </categories>
-      <tags>
-        <tag>Javascript</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title><![CDATA[2018-04-25 react优化]]></title>
-    <url>%2F2018%2F04%2F25%2Freact%E4%BC%98%E5%8C%96%2F</url>
-    <content type="text"><![CDATA[React性能优化 由于React使用的虚拟DOM在其节点发生变化时,React会使用Diff算法对前后的虚拟DOM树进行对比,一旦发现不同,虚拟DOM树就会从根结点进行重新刷新,而浏览器进行实际操作DOM的仅仅是diff的部分,尽管每次虚拟DOM都会从根结点进行重新刷新,但是由于javascript是存储在内存中,所以性能很高,但是每一次都会从虚拟DOM的根结点进行重新刷新,会造成一些无谓的虚拟DOM树的重新刷新,比如父组件的虚拟DOM节点修改发生了变化,虚拟DOM节点根据diff算法进行对比之后,就会从虚拟DOM根结点进行重新刷新,但是其子组件并没有发生虚拟DOM的修改,这是子组件也会跟着父组件一起进行虚拟DOM树的diff算法对比和虚拟DOM节点的重新刷新,也耗费了比较多的时间。为了避免无谓的虚拟DOM树diff算法对比和虚拟DOM根结点的重新刷新,React给开发者提供了shouldComponentUpdate进行判断,shouldComponentUpdate是运行在虚拟DOM树diff算法对比和虚拟DOM树根结点重新渲染之前的,假如返回true就说明,数据发生了变化,需要进行虚拟DOM树diff算法对比以及虚拟DOM根结点的重新刷新,否则就返回false,不执行虚拟DOM树diff算法对比以及虚拟DOM根结点的重新刷新。 避免无谓的虚拟DOM树重新刷新 假如有一个组件仅仅渲染一个字符串,利用shouldComponentUpdate进行判断,避免无谓的虚拟DOM树重新刷新 class TextView extends React.Component{ static propTypes = { value: PropTypes.string.isRequired }; constructor(props){ super(props); this.state = { }; } shouldComponentUpdate(nextProps, nextState){ return this.props.value !== nextProps.value; } render(){ let {value} = this.props; return ( &lt;h1&gt; {value} &lt;/h1&gt; ) } }]]></content>
+      
+      
+        <tags>
+            
+            <tag> Javascript </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    <entry>
+      <title>2018-04-25 react优化</title>
+      <link href="/2018/04/25/react%E4%BC%98%E5%8C%96/"/>
+      <url>/2018/04/25/react%E4%BC%98%E5%8C%96/</url>
+      <content type="html"><![CDATA[<h1 id="React性能优化"><a href="#React性能优化" class="headerlink" title="React性能优化"></a>React性能优化</h1><blockquote><p>由于React使用的虚拟DOM在其节点发生变化时,React会使用Diff算法对前后的虚拟DOM树进行对比,一旦发现不同,虚拟DOM树就会从根结点进行重新刷新,而浏览器进行实际操作DOM的仅仅是diff的部分,尽管每次虚拟DOM都会从根结点进行重新刷新,但是由于javascript是存储在内存中,所以性能很高,但是每一次都会从虚拟DOM的根结点进行重新刷新,会造成一些无谓的虚拟DOM树的重新刷新,比如父组件的虚拟DOM节点修改发生了变化,虚拟DOM节点根据diff算法进行对比之后,就会从虚拟DOM根结点进行重新刷新,但是其子组件并没有发生虚拟DOM的修改,这是子组件也会跟着父组件一起进行虚拟DOM树的diff算法对比和虚拟DOM节点的重新刷新,也耗费了比较多的时间。为了避免无谓的虚拟DOM树diff算法对比和虚拟DOM根结点的重新刷新,React给开发者提供了shouldComponentUpdate进行判断,shouldComponentUpdate是运行在虚拟DOM树diff算法对比和虚拟DOM树根结点重新渲染之前的,假如返回true就说明,数据发生了变化,需要进行虚拟DOM树diff算法对比以及虚拟DOM根结点的重新刷新,否则就返回false,不执行虚拟DOM树diff算法对比以及虚拟DOM根结点的重新刷新。</p></blockquote><h1 id="避免无谓的虚拟DOM树重新刷新"><a href="#避免无谓的虚拟DOM树重新刷新" class="headerlink" title="避免无谓的虚拟DOM树重新刷新"></a>避免无谓的虚拟DOM树重新刷新</h1><blockquote><p>假如有一个组件仅仅渲染一个字符串,利用shouldComponentUpdate进行判断,避免无谓的虚拟DOM树重新刷新</p></blockquote><pre><code>class TextView extends React.Component{    static propTypes = {        value: PropTypes.string.isRequired    };    constructor(props){        super(props);        this.state = {        };    }    shouldComponentUpdate(nextProps, nextState){        return this.props.value !== nextProps.value;    }    render(){        let {value} = this.props;        return (            &lt;h1&gt;                {value}            &lt;/h1&gt;        )    }}</code></pre>]]></content>
+      
       <categories>
-        <category>react</category>
+          
+          <category> react </category>
+          
       </categories>
-      <tags>
-        <tag>react</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title><![CDATA[2018-04-25 react-router 3.0 browserHistory配置]]></title>
-    <url>%2F2018%2F04%2F25%2Freact-router-3-0-browserHistory%E9%85%8D%E7%BD%AE%2F</url>
-    <content type="text"><![CDATA[为什么推荐使用browserHistory,舍弃hashHistory 首先browserHistory从表现来看,比较舒服和语义化,更易读。 browserHistory使用的是HTML5的History API,根据路由路径的变化引起浏览器历史记录的变化;hashHistory则是依靠hash的改变,来使得浏览器的历史记录发生改变。hashHistory的hash部分不会请求到服务端,服务端获取不到URL的细节部分,而browserHistory使用的History API需要服务端的支持,服务端可以完全的掌握URL中的细节部分。 有一些浏览器会把hashHistory URL当中的hash部分删除掉,记起之前进行分享的时候,URL传到微信中,hash部分遭到丢失。 browserHistory配置 路由上面除了引入不同,基本上和hashHistory配置相同 import {Router, browserHistory} from &quot;react-router&quot;; &lt;Router history={browserHistory}&gt; &lt;/Router&gt; 配置路径为空时,callback的处理,使用webpack-dev-server时,在配置文件内部添加 historyApiFallback: true 使用nginx时,在配置文件内部添加 location / { root ... index index.html index.htm try_files $uri /index.html }]]></content>
+      
+      
+        <tags>
+            
+            <tag> react </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    <entry>
+      <title>2018-04-25 react-router 3.0 browserHistory配置</title>
+      <link href="/2018/04/25/react-router-3-0-browserHistory%E9%85%8D%E7%BD%AE/"/>
+      <url>/2018/04/25/react-router-3-0-browserHistory%E9%85%8D%E7%BD%AE/</url>
+      <content type="html"><![CDATA[<h1 id="为什么推荐使用browserHistory-舍弃hashHistory"><a href="#为什么推荐使用browserHistory-舍弃hashHistory" class="headerlink" title="为什么推荐使用browserHistory,舍弃hashHistory"></a>为什么推荐使用browserHistory,舍弃hashHistory</h1><blockquote><ol><li>首先browserHistory从表现来看,比较舒服和语义化,更易读。</li><li>browserHistory使用的是HTML5的History API,根据路由路径的变化引起浏览器历史记录的变化;hashHistory则是依靠hash的改变,来使得浏览器的历史记录发生改变。hashHistory的hash部分不会请求到服务端,服务端获取不到URL的细节部分,而browserHistory使用的History API需要服务端的支持,服务端可以完全的掌握URL中的细节部分。</li><li>有一些浏览器会把hashHistory URL当中的hash部分删除掉,记起之前进行分享的时候,URL传到微信中,hash部分遭到丢失。</li></ol></blockquote><h1 id="browserHistory配置"><a href="#browserHistory配置" class="headerlink" title="browserHistory配置"></a>browserHistory配置</h1><blockquote><p>路由上面除了引入不同,基本上和hashHistory配置相同</p></blockquote><pre><code>import {Router, browserHistory} from &quot;react-router&quot;;&lt;Router history={browserHistory}&gt;&lt;/Router&gt;</code></pre><blockquote><p>配置路径为空时,callback的处理,使用webpack-dev-server时,在配置文件内部添加</p></blockquote><pre><code>historyApiFallback: true</code></pre><blockquote><p>使用nginx时,在配置文件内部添加</p></blockquote><pre><code>location / {    root ...    index index.html index.htm    try_files $uri /index.html}</code></pre>]]></content>
+      
       <categories>
-        <category>react-router</category>
+          
+          <category> react-router </category>
+          
       </categories>
-      <tags>
-        <tag>react-router</tag>
-        <tag>browserHistory</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title><![CDATA[2018-04-24 react原理]]></title>
-    <url>%2F2018%2F04%2F24%2Freact%E5%8E%9F%E7%90%86%2F</url>
-    <content type="text"><![CDATA[React原理 React的主体思想:数据驱动。React根据数据的变化,使得View视图rerender,也就是重新渲染。React使用的是jsx(js + xml)语法和虚拟DOM,React引入虚拟DOM,是一件很革新的事情,在React之前,DOM操作十分昂贵,大量的DOM操作耗费了web网站大量的时间,性能比较低。React使用Javascript模拟DOM,使得View进行渲染,当虚拟DOM节点发生修改时,React使用diff算法进行比对,一旦发现不同,React虚拟DOM就会从根节点进行rerender,而浏览器实际的DOM操作仅仅是diff部分,尽管每次的虚拟DOM都是从根节点进行刷新,但由于是内存数据,性能很高,而浏览器实际的DOM操作仅仅是diff部分,从而很大程度上提高了web网站的性能。]]></content>
+      
+      
+        <tags>
+            
+            <tag> react-router </tag>
+            
+            <tag> browserHistory </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    <entry>
+      <title>2018-04-24 react原理</title>
+      <link href="/2018/04/24/react%E5%8E%9F%E7%90%86/"/>
+      <url>/2018/04/24/react%E5%8E%9F%E7%90%86/</url>
+      <content type="html"><![CDATA[<h1 id="React原理"><a href="#React原理" class="headerlink" title="React原理"></a>React原理</h1><blockquote><p>React的主体思想:数据驱动。React根据数据的变化,使得View视图rerender,也就是重新渲染。React使用的是jsx(js + xml)语法和虚拟DOM,React引入虚拟DOM,是一件很革新的事情,在React之前,DOM操作十分昂贵,大量的DOM操作耗费了web网站大量的时间,性能比较低。React使用Javascript模拟DOM,使得View进行渲染,当虚拟DOM节点发生修改时,React使用diff算法进行比对,一旦发现不同,React虚拟DOM就会从根节点进行rerender,而浏览器实际的DOM操作仅仅是diff部分,尽管每次的虚拟DOM都是从根节点进行刷新,但由于是内存数据,性能很高,而浏览器实际的DOM操作仅仅是diff部分,从而很大程度上提高了web网站的性能。</p></blockquote>]]></content>
+      
       <categories>
-        <category>react</category>
+          
+          <category> react </category>
+          
       </categories>
-      <tags>
-        <tag>react</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title><![CDATA[2018-04-24 hexo搭建自己的博客]]></title>
-    <url>%2F2018%2F04%2F24%2Fhexo%E8%AE%B0%E5%BD%95%2F</url>
-    <content type="text"><![CDATA[git建库 首先要先建立一个以dreamthen(我的用户名).github.io结尾的repository,作为hexo托管代码的库,github默认.github.io结尾作为用户的网站二级域名。所以github用户搭建自己的个人网站很容易。 hexo安装 首先要用npm外部依赖包管理工具安装全局命令hexo-cli npm install hexo-cli -g 然后使用hexo初始化博客文件夹,比如blog文件夹 hexo init blog 之后,进入生成的blog文件夹,下载外部依赖包 npm i/npm install 最后启动hexo自身搭建的服务,生成本地的博客网站,默认端口在本地ip地址下的4000端口,假如你不想启动在4000端口,也可使用-p 其他端口号进行配置,比如-p 9977 hexo server hexo server -p 9977 默认的主题风格theme是landscape,假如你想更换,可以通过https://hexo.io/themes/进行筛选,筛选之后进行配置,主题配置见下文 hexo配置 hexo git配置 要想部署到自己搭建的个人网站github库里面,首先要下载hexo-git插件 npm install hexo-deployer-git --save 然后就要在你自己的本地hexo博客的项目里面,更改根目录底下的_config.yml文件,全局搜索git,更改deploy配置 deploy: type: git repo: git@github.com:dreamthen/dreamthen.github.io.git(你的个人网站github库的链接地址,最好使用git:开头的,https:开头的会报错) branch: master(分支名) hexo theme主题配置 筛选好自己选中的主题之后,就需要在项目里面进行配置更换。首先需要下载远程github库里面的主题项目到项目根目录里面的themes文件夹底下,比如本人用的是next主题的hexo git clone https://github.com/iissnan/hexo-theme-next.git themes/next 随后更改根目录里面的_config.yml文件,全局搜索theme,更改theme配置 theme: next 接着选择主题展示的方式,需要在主题的项目目录下,更改_config.yml文件,全局搜索Scheme,更改Scheme配置,比如next主题底下的Scheme配置 scheme: #scheme: Muse scheme: Mist #scheme: Pisces #scheme: Gemini hexo language语言配置 每个主题的语言都是根据作者的母语来配置的,要想配置开发者自己国家的语言,还是更改项目根目录底下的_config.yml文件,全局搜索language,更改language配置 language: zh-CN 再更改主题项目目录底下的language文件夹底下的zh-Hans.yml文件,将其重命名为zh-CN.yml,再更改其目录底下的_config.yml文件,全局搜索language,更改language配置 language: zh-CN hexo page 页面配置 hexo提供了几个可供筛选的页面,常用的有这么几个：home(首页)、tags(标签)、about(关于我)、archives(档案)和categories(分类),首先要创建页面 hexo new page tags hexo new page about hexo new page categories 接着在主题项目目录下,更改_config.yml文件,全局搜索menu,更改menu配置,当然每个主题的配置不尽相同 menu: home: / || home about: /about/ || user tags: /tags/ || tags categories: /categories/ || th archives: /archives/ || archive 随后更改source目录底下创建的页面,以tags为例 ---------------------------- title: about date: 2018-04-24 17:57:26 type: &quot;tags&quot; comments: false ---------------------------- hexo avatar 头像配置 配置自己个人博客网站的头像,需要更改hexo博客项目底下的_config.yml文件,添加avatar配置 avatar: https://avatars1.githubusercontent.com/u/13704681?s=400&amp;u=bfc4636397a7c4384f63d4836a33d1797cd2c660&amp;v=4(头像url链接) hexo search 全站搜索配置 假如想要配置自己hexo个人博客网站的全站搜索配置,首先要下载hexo search外部依赖包 npm install hexo-generator-search --save npm install hexo-generator-searchdb --save 更改hexo博客项目根目录底下的_config.yml文件,添加search配置 search: path: search.xml field: post format: html limit: 10000 开启主题项目目录底下的_config.yml文件中的local_search配置 local_search: enable: true hexo new_post_name配置 假如想要更改每一篇博客的文件名称,不再是默认的:title.md的文件名,需要更改hexo博客项目根目录底下的_config.yml文件,更改new_post_name配置 new_post_name: :year-:month-:day-:title.md hexo auto_excerpt阅读全文配置 博客文章一般都会很长的,所以在首页要对博客进行超长截断,要想看所有的内容,点击阅读全文或者文章标题进入全文查看,需要更改主题项目目录底下的_config.yml文件,全局搜索auto_excerpt,更改auto_excerpt配置 auto_excerpt: enable: true length: 200 hexo 其他配置 更改hexo博客项目根目录底下的_config.yml文件,更改网站title(标题)、author(作者)、keywords(关键字)、description(描述)配置,比如本人的配置 title: yinwk_Gary Blog author: yinwk_Gary keywords: hexo,hexo-cli,hexo博客,hexo博客个人网站 description: Gary&apos;s blog,记录_从今天开始 设置个人的github(github托管代码网址)、google(google个人资料网址)、gmail(gmail邮箱网址)、twitter(twitter个人微博网址)等等,比如本人的配置 social: GitHub: https://github.com/dreamthen || github E-Mail: https://dreamthen.00@gmail.com || envelope Google: https://plus.google.com/u/0/103833130011211353424 || google #hexo命令 首先建立一篇名为hexo配置的博客 hexo new hexo配置 在hexo博客项目source目录底下的_post目录下找到名为hexo配置的博客文件,在里面用markdown进行记录自己的博客,当然可以在hexo server自带的服务器运行监听的情况下,进行添加和修改自己的博客。之后，进行生成静态文件 hexo generate 生成静态文件之后,进行部署 hexo deploy 生成静态文件和部署可以使用一句命令执行 hexo generate -deploy hexo deploy -generate 为了防止存在静态文件和缓存,造成没有重新渲染页面的问题,在每一次部署之前,要运行一下清理静态文件和缓存的命令 hexo clean hexo generate hexo deploy hexo deploy部署之后,根据hexo博客项目根目录底下_config.yml配置文件的deploy git配置,会提交到远程github repository库]]></content>
+      
+      
+        <tags>
+            
+            <tag> react </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    <entry>
+      <title>2018-04-24 hexo搭建自己的博客</title>
+      <link href="/2018/04/24/hexo%E8%AE%B0%E5%BD%95/"/>
+      <url>/2018/04/24/hexo%E8%AE%B0%E5%BD%95/</url>
+      <content type="html"><![CDATA[<h1 id="git建库"><a href="#git建库" class="headerlink" title="git建库"></a>git建库</h1><blockquote><p>首先要先建立一个以dreamthen(我的用户名).github.io结尾的repository,作为hexo托管代码的库,github默认.github.io结尾作为用户的网站二级域名。所以github用户搭建自己的个人网站很容易。</p></blockquote><h1 id="hexo安装"><a href="#hexo安装" class="headerlink" title="hexo安装"></a>hexo安装</h1><blockquote><p>首先要用npm外部依赖包管理工具安装全局命令hexo-cli</p></blockquote><pre><code>npm install hexo-cli -g</code></pre><blockquote><p>然后使用hexo初始化博客文件夹,比如blog文件夹</p></blockquote><pre><code>hexo init blog</code></pre><blockquote><p>之后,进入生成的blog文件夹,下载外部依赖包</p></blockquote><pre><code>npm i/npm install</code></pre><blockquote><p>最后启动hexo自身搭建的服务,生成本地的博客网站,默认端口在本地ip地址下的4000端口,假如你不想启动在4000端口,也可使用-p 其他端口号进行配置,比如-p 9977   </p></blockquote><pre><code>hexo serverhexo server -p 9977</code></pre><blockquote><p>默认的主题风格theme是landscape,假如你想更换,可以通过<a href="https://hexo.io/themes/" target="_blank" rel="noopener">https://hexo.io/themes/</a>进行筛选,筛选之后进行配置,主题配置见下文</p></blockquote><h1 id="hexo配置"><a href="#hexo配置" class="headerlink" title="hexo配置"></a>hexo配置</h1><ul><li><h4 id="hexo-git配置"><a href="#hexo-git配置" class="headerlink" title="hexo git配置"></a>hexo git配置</h4></li></ul><blockquote><p>要想部署到自己搭建的个人网站github库里面,首先要下载hexo-git插件</p></blockquote><pre><code>npm install hexo-deployer-git --save</code></pre><blockquote><p>然后就要在你自己的本地hexo博客的项目里面,更改根目录底下的_config.yml文件,全局搜索git,更改deploy配置</p></blockquote><pre><code>deploy:    type: git    repo: git@github.com:dreamthen/dreamthen.github.io.git(你的个人网站github库的链接地址,最好使用git:开头的,https:开头的会报错)    branch: master(分支名)</code></pre><ul><li><h4 id="hexo-theme主题配置"><a href="#hexo-theme主题配置" class="headerlink" title="hexo theme主题配置"></a>hexo theme主题配置</h4></li></ul><blockquote><p>筛选好自己选中的主题之后,就需要在项目里面进行配置更换。首先需要下载远程github库里面的主题项目到项目根目录里面的themes文件夹底下,比如本人用的是next主题的hexo</p></blockquote><pre><code>git clone https://github.com/iissnan/hexo-theme-next.git themes/next</code></pre><blockquote><p>随后更改根目录里面的_config.yml文件,全局搜索theme,更改theme配置</p></blockquote><pre><code>theme: next</code></pre><blockquote><p>接着选择主题展示的方式,需要在主题的项目目录下,更改_config.yml文件,全局搜索Scheme,更改Scheme配置,比如next主题底下的Scheme配置</p></blockquote><pre><code>scheme:    #scheme: Muse    scheme: Mist    #scheme: Pisces    #scheme: Gemini</code></pre><ul><li><h4 id="hexo-language语言配置"><a href="#hexo-language语言配置" class="headerlink" title="hexo language语言配置"></a>hexo language语言配置</h4></li></ul><blockquote><p>每个主题的语言都是根据作者的母语来配置的,要想配置开发者自己国家的语言,还是更改项目根目录底下的_config.yml文件,全局搜索language,更改language配置</p></blockquote><pre><code>language: zh-CN</code></pre><blockquote><p>再更改主题项目目录底下的language文件夹底下的zh-Hans.yml文件,将其重命名为zh-CN.yml,再更改其目录底下的_config.yml文件,全局搜索language,更改language配置</p></blockquote><pre><code>language: zh-CN    </code></pre><ul><li><h4 id="hexo-page-页面配置"><a href="#hexo-page-页面配置" class="headerlink" title="hexo page 页面配置"></a>hexo page 页面配置</h4></li></ul><blockquote><p>hexo提供了几个可供筛选的页面,常用的有这么几个：home(首页)、tags(标签)、about(关于我)、archives(档案)和categories(分类),首先要创建页面</p></blockquote><pre><code>hexo new page tagshexo new page abouthexo new page categories</code></pre><blockquote><p>接着在主题项目目录下,更改_config.yml文件,全局搜索menu,更改menu配置,当然每个主题的配置不尽相同</p></blockquote><pre><code>menu:    home: / || home    about: /about/ || user    tags: /tags/ || tags    categories: /categories/ || th    archives: /archives/ || archive</code></pre><blockquote><p>随后更改source目录底下创建的页面,以tags为例</p></blockquote><pre><code>----------------------------    title: about    date: 2018-04-24 17:57:26    type: &quot;tags&quot;    comments: false----------------------------</code></pre><ul><li><h4 id="hexo-avatar-头像配置"><a href="#hexo-avatar-头像配置" class="headerlink" title="hexo avatar 头像配置"></a>hexo avatar 头像配置</h4></li></ul><blockquote><p>配置自己个人博客网站的头像,需要更改hexo博客项目底下的_config.yml文件,添加avatar配置</p></blockquote><pre><code>avatar: https://avatars1.githubusercontent.com/u/13704681?s=400&amp;u=bfc4636397a7c4384f63d4836a33d1797cd2c660&amp;v=4(头像url链接)</code></pre><ul><li><h4 id="hexo-search-全站搜索配置"><a href="#hexo-search-全站搜索配置" class="headerlink" title="hexo search 全站搜索配置"></a>hexo search 全站搜索配置</h4></li></ul><blockquote><p>假如想要配置自己hexo个人博客网站的全站搜索配置,首先要下载hexo search外部依赖包</p></blockquote><pre><code>npm install hexo-generator-search --savenpm install hexo-generator-searchdb --save</code></pre><blockquote><p>更改hexo博客项目根目录底下的_config.yml文件,添加search配置</p></blockquote><pre><code>search:    path: search.xml    field: post    format: html    limit: 10000</code></pre><blockquote><p>开启主题项目目录底下的_config.yml文件中的local_search配置</p></blockquote><pre><code>local_search:    enable: true        </code></pre><ul><li><h4 id="hexo-new-post-name配置"><a href="#hexo-new-post-name配置" class="headerlink" title="hexo new_post_name配置"></a>hexo new_post_name配置</h4></li></ul><blockquote><p>假如想要更改每一篇博客的文件名称,不再是默认的:title.md的文件名,需要更改hexo博客项目根目录底下的_config.yml文件,更改new_post_name配置</p></blockquote><pre><code>new_post_name: :year-:month-:day-:title.md</code></pre><ul><li><h4 id="hexo-auto-excerpt阅读全文配置"><a href="#hexo-auto-excerpt阅读全文配置" class="headerlink" title="hexo auto_excerpt阅读全文配置"></a>hexo auto_excerpt阅读全文配置</h4></li></ul><blockquote><p>博客文章一般都会很长的,所以在首页要对博客进行超长截断,要想看所有的内容,点击阅读全文或者文章标题进入全文查看,需要更改主题项目目录底下的_config.yml文件,全局搜索auto_excerpt,更改auto_excerpt配置</p></blockquote><pre><code>auto_excerpt:    enable: true    length: 200</code></pre><ul><li><h4 id="hexo-其他配置"><a href="#hexo-其他配置" class="headerlink" title="hexo 其他配置"></a>hexo 其他配置</h4></li></ul><blockquote><p>更改hexo博客项目根目录底下的_config.yml文件,更改网站title(标题)、author(作者)、keywords(关键字)、description(描述)配置,比如本人的配置</p></blockquote><pre><code>title: yinwk_Gary Blogauthor: yinwk_Garykeywords: hexo,hexo-cli,hexo博客,hexo博客个人网站description: Gary&apos;s blog,记录_从今天开始</code></pre><blockquote><p>设置个人的github(github托管代码网址)、google(google个人资料网址)、gmail(gmail邮箱网址)、twitter(twitter个人微博网址)等等,比如本人的配置</p></blockquote><pre><code>social:  GitHub: https://github.com/dreamthen || github  E-Mail: https://dreamthen.00@gmail.com || envelope  Google: https://plus.google.com/u/0/103833130011211353424 || google       </code></pre><p>#hexo命令</p><blockquote><p>首先建立一篇名为hexo配置的博客</p></blockquote><pre><code>hexo new hexo配置</code></pre><blockquote><p>在hexo博客项目source目录底下的_post目录下找到名为hexo配置的博客文件,在里面用markdown进行记录自己的博客,当然可以在hexo server自带的服务器运行监听的情况下,进行添加和修改自己的博客。之后，进行生成静态文件</p></blockquote><pre><code>hexo generate</code></pre><blockquote><p>生成静态文件之后,进行部署</p></blockquote><pre><code>hexo deploy</code></pre><blockquote><p>生成静态文件和部署可以使用一句命令执行</p></blockquote><pre><code>hexo generate -deployhexo deploy -generate</code></pre><blockquote><p>为了防止存在静态文件和缓存,造成没有重新渲染页面的问题,在每一次部署之前,要运行一下清理静态文件和缓存的命令</p></blockquote><pre><code>hexo cleanhexo generatehexo deploy</code></pre><blockquote><p>hexo deploy部署之后,根据hexo博客项目根目录底下_config.yml配置文件的deploy git配置,会提交到远程github repository库                     </p></blockquote>]]></content>
+      
       <categories>
-        <category>hexo博客搭建工具</category>
+          
+          <category> hexo博客搭建工具 </category>
+          
       </categories>
-      <tags>
-        <tag>hexo</tag>
-        <tag>hexo-cli</tag>
-      </tags>
-  </entry>
+      
+      
+        <tags>
+            
+            <tag> hexo </tag>
+            
+            <tag> hexo-cli </tag>
+            
+        </tags>
+      
+    </entry>
+    
+  
+  
 </search>
