@@ -87,7 +87,7 @@
 <meta property="og:site_name" content="yinwk_Gary Blog">
 <meta property="og:description" content="为何第三方依赖包会引起打包的体积过大 ES6的模块化机制,当引入外部第三方依赖包时,无论是否已经引入,都会再次将其引入进来,这时候就会存在重复引入导致打包体积过大、打包速度过慢的问题。  如何解决重复引入第三方依赖包,引起的打包体积过大以及打包速度过慢的问题  使用CommonsChunkPlugin提取公共模块,理想状态下是将第三方外部依赖包、业务代码、业务代码中的重复引入的公共部分和webpa">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2018-05-06T06:37:44.023Z">
+<meta property="og:updated_time" content="2018-05-06T06:42:24.029Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="2018-04-30 webpack打包如何防止第三方依赖包体积过大造成打包速度慢的问题">
 <meta name="twitter:description" content="为何第三方依赖包会引起打包的体积过大 ES6的模块化机制,当引入外部第三方依赖包时,无论是否已经引入,都会再次将其引入进来,这时候就会存在重复引入导致打包体积过大、打包速度过慢的问题。  如何解决重复引入第三方依赖包,引起的打包体积过大以及打包速度过慢的问题  使用CommonsChunkPlugin提取公共模块,理想状态下是将第三方外部依赖包、业务代码、业务代码中的重复引入的公共部分和webpa">
@@ -657,7 +657,7 @@ const webpackProdConfig = {
         //    filepath: &quot;js/vendor.dll.js&quot;,
         //    hash: true
         //}),
-        //这里的HtmlWebpackIncludeAssetsPlugin会有选择的将login、index、app入口文件引入vendor.dll.js
+        //这里的HtmlWebpackIncludeAssetsPlugin会有选择的将login、index、app入口文件引入vendor.dll.js,可实现&lt;b&gt;按需加载&lt;/b&gt;
         //append属性设置为false,是确保vendor.dll.js文件在业务代码包模块之前引入
         new HtmlWebpackIncludeAssetsPlugin({
             assets: [&quot;js/vendor.dll.js&quot;],
