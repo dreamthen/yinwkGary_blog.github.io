@@ -87,7 +87,7 @@
 <meta property="og:site_name" content="yinwk_Gary Blog">
 <meta property="og:description" content="debounce函数节流 函数节流通常被用于输入下拉框、滚动懒加载等场景,目的只有一个,在短时间内,限制多次调用后台接口,浪费大量资源,防止接口响应数据时间上的误差造成的页面显示数据的错误。  //设置一个timer变量,用来承接setTimeout返回的延时对象 const timer = null; //函数节流方法 function debounce(fuc, delay) {     //">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2018-05-06T10:28:16.528Z">
+<meta property="og:updated_time" content="2018-05-15T09:56:11.431Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="2018-05-06 封装的一些小工具">
 <meta name="twitter:description" content="debounce函数节流 函数节流通常被用于输入下拉框、滚动懒加载等场景,目的只有一个,在短时间内,限制多次调用后台接口,浪费大量资源,防止接口响应数据时间上的误差造成的页面显示数据的错误。  //设置一个timer变量,用来承接setTimeout返回的延时对象 const timer = null; //函数节流方法 function debounce(fuc, delay) {     //">
@@ -403,6 +403,248 @@ function debounce(fuc, delay) {
 }
 //函数节流方法,只要在delay时间内,再次触发此方法,延时对象就会被停止且置空,后台的接口函数就不会被调用。
 //做到了在短时间内输入或者滚动限制了多次调用后台接口,防止了接口响应数据时间上的误差造成页面数据显示的错误。
+</code></pre><h1 id="getElementsByClassName封装"><a href="#getElementsByClassName封装" class="headerlink" title="getElementsByClassName封装"></a>getElementsByClassName封装</h1><blockquote>
+<p>getElementsByClassName是HTML5 DOM引入的一个获取class样式节点的方法,有一些不支持HTML5 DOM的浏览器可能不存在这个方法,所以需要对这个方法进行封装</p>
+</blockquote>
+<pre><code>//html code
+&lt;!Doctype html&gt;
+&lt;html lang=&quot;zh-cn&quot;&gt;
+    &lt;head&gt;
+        &lt;meta charset=&quot;utf-8&quot;&gt;
+        &lt;title&gt;getElemetnsByClassName封装&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;div id=&quot;home&quot;&gt;
+            &lt;p class=&quot;number&quot;&gt;first&lt;/p&gt;
+            &lt;p class=&quot;number second&quot;&gt;second&lt;/p&gt;
+            &lt;p class=&quot;number&quot;&gt;third&lt;/p&gt;
+        &lt;/div&gt;
+    &lt;/body&gt;
+    &lt;script type=&quot;text/javascript&quot; src=&quot;boxesByClassName.js&quot;&gt;&lt;/script&gt;
+&lt;/html&gt;
+
+//boxesByClassName.js
+function getElementsByClassName(node, className) {
+    //判断DOM是否有getElementsByClassName方法,假如有,就返回node节点下的所有className子节点
+    if(node.getElementsByClassName) {
+        return node.getElementsByClassName(className);
+    } else {
+    //假如没有,就先去获取node节点下的所有子节点元素,然后根据子节点元素的className属性进行匹配外部传入的className,假如包含此className,就传入返回的数组中,最后返回数组
+        let _get_className_arr = [],
+            _tag_arr = node.getElementsByTagName(&quot;*&quot;),
+            _tag_arr_length = _tag_arr.length;
+        for(let i = 0; i &lt; _tag_arr_length; i++) {
+            if(_tag_arr[i].className.includes(className)){
+                _get_className_arr[_get_className_arr.length] = _tag_arr[i];
+            }
+        }
+        return _get_className_arr;
+    }
+}
+</code></pre><h1 id="addEvent加载完成事件封装"><a href="#addEvent加载完成事件封装" class="headerlink" title="addEvent加载完成事件封装"></a>addEvent加载完成事件封装</h1><blockquote>
+<p>对于window.onload事件,再熟悉不过了,用于在页面DOM全部加载完毕之后执行Javascript,防止在页面DOM渲染过程中对DOM进行操作,使得页面卡顿,降低用户体验。window.onload的挂载一个或者多个的方式于实际情况而定,所以需要对window.onlaod加载完成事件进行封装</p>
+</blockquote>
+<pre><code>function addEvent(eventLoad) {
+    //将window.onload事件函数赋值给一个变量
+    let load = window.onload;
+    //判断window.onload加载完成事件上面,是否挂载了事件函数
+    //假如挂载了事件函数,就将新的事件函数添加到window.onload加载完成事件队列中
+    //假如没有挂载事件函数,就直接将新的事件函数挂载上去
+    if (typeof load !== &quot;function&quot;) {
+        window.onload = eventLoad;
+    } else {
+        window.onload = function() {
+            load();
+            eventLoad();           
+        }
+    }
+}
+</code></pre><h1 id="insertAfter插入到某个元素节点之后封装"><a href="#insertAfter插入到某个元素节点之后封装" class="headerlink" title="insertAfter插入到某个元素节点之后封装"></a>insertAfter插入到某个元素节点之后封装</h1><blockquote>
+<p>parentNode.insertBefore(newElement, targetElement),insertBefore方法是在某一个元素节点之前插入新的元素节点,而DOM-Core并没有提供insertAfter方法,旨在在某一个元素节点之后插入新的元素节点,于是进行insertAfter封装</p>
+</blockquote>
+<pre><code>function insertAfter(newElement, targetElement) {
+    //获取目标节点的父节点
+    let parent = targetElement.parentNode;
+    //判断父节点的最后一个子节点是否是目标节点,假如是,就直接将新的元素节点,添加到父节点下
+    //假如不是,就将新的元素节点插入到目标节点兄弟节点之前
+    if(parent.lastChild == targetElement) {
+        parent.appendChild(newElement);
+    } else {
+        parent.insertBefore(newElement, targetElement.nextSibling);
+    }
+}
+</code></pre><h1 id="isEmpty判断对象是否为空的封装"><a href="#isEmpty判断对象是否为空的封装" class="headerlink" title="isEmpty判断对象是否为空的封装"></a>isEmpty判断对象是否为空的封装</h1><blockquote>
+<p>Javascript的对象判断是否为空,并没有原生的方法,所以需要封装一下,成为自己的库</p>
+</blockquote>
+<pre><code>function isEmpty(obj) {
+    //判断对象是否为空的标识符,默认为true,判断对象为空
+    let flag = true;
+    //使用ES6遍历对象,假如对象中有遍历的对象属性,就说明对象不为空,设置flag为false,判断对象不为空
+    for(let [key, value] of Object.entries(obj)) {
+        if(obj.hasOwnProperty(key)) {
+            flag = false;
+            break;
+        }
+    }
+    return flag;
+}
+</code></pre><h1 id="getNextElementSibling获取元素节点的下一个兄弟元素节点"><a href="#getNextElementSibling获取元素节点的下一个兄弟元素节点" class="headerlink" title="getNextElementSibling获取元素节点的下一个兄弟元素节点"></a>getNextElementSibling获取元素节点的下一个兄弟元素节点</h1><blockquote>
+<p>node.nextSibling是获取某一个元素节点的下一个兄弟节点,但是节点类型可能是元素、属性以及文本,是不确定的,而通常,我们希望获取下一个兄弟节点的时候为元素节点,所以需要对获取元素节点的下一个兄弟元素节点进行封装</p>
+</blockquote>
+<pre><code>function getNextElementSibling(node) {
+    //判断元素节点是否有下一个兄弟节点,如果没有返回false
+    if(!node.nextSibling) return false;
+    //获取元素节点的下一个兄弟节点
+    let nextSibling = node.nextSibling;
+    //假如元素节点的下一个兄弟节点的节点类型为1,也就是元素节点,就返回元素节点的下一个兄弟节点
+    if(nextSibling.nodeType === 1) {
+        return nextSibling;
+    }
+    //假如元素节点的下一个兄弟节点的节点类型为除了1以外的其他数字,就再次递归元素节点的下一个兄弟节点,直到找到下一个兄弟元素节点位置
+    return getNextElementSibling(nextSibling);   
+}
+</code></pre><h1 id="moveElement动态的元素节点"><a href="#moveElement动态的元素节点" class="headerlink" title="moveElement动态的元素节点"></a>moveElement动态的元素节点</h1><blockquote>
+<p>通过原生的Javascript来生成动画,是解决CSS3不兼容低版本浏览器的最好的平稳退化方案,利用setTimeout生成的通用动画效果的函数方法在此</p>
+</blockquote>
+<pre><code>//设置一个承接时间对象的变量
+let timer = null;
+//函数传递四个参数,要产生移动的元素节点,将要移动到的x轴位置,将要移动到的y轴位置,以及移动元素节点的时间(单位: 毫秒)
+function moveElement(node, x, y, speed) {
+    //首先校验是否存在移动元素的节点,假如不存在,直接返回false,退出函数
+    if(!document.getElementById(node)) return false;
+    let elem = document.getElementById(node);
+    //然后判断是否有时间对象,假如有的话,直接清理掉,并把时间对象置为空,以便浏览器垃圾回收机制更快的回收内存中的不需要的数据
+    if(timer) {
+        clearTimeout(timer);
+        timer = null;
+    }
+    //判断移动元素节点样式的top和left属性是否存在,如果不存在,初始化top和left的属性为0px
+    if(!elem.style.top) {
+        elem.style.top = &quot;0px&quot;;
+    }
+    if(!elem.style.left) {
+        elem.style.left = &quot;0px&quot;;
+    }
+    //获取移动元素节点样式的top和left属性值,并转化为绝对值的数值类型
+    let xpo = Math.abs(parseInt(elem.style.left)),
+        ypo = Math.abs(parseInt(elem.style.top));
+    //假如移动元素节点样式的left的绝对值与要移动到的x轴位置相等,且移动元素节点样式的top的绝对值与要移动到的y轴位置相等,则返回true,退出递归函数
+    if(xpo === x &amp;&amp; ypo === y) {
+        return true
+    }
+    let dist;
+    //假如移动元素节点样式的left的绝对值小于要移动到的x轴位置,就将移动元素节点样式的left的绝对值赋值为它俩的差的十分之一的向上取整数值,这样的目的是为了实现越接近目标位置速度越慢的动态效果
+    if(xpo &lt; x) {
+        dist = Math.ceil((x - xpo) / 10);
+        xpo += dist;
+    }
+    //假如移动元素节点样式的left的绝对值大于要移动到的x轴位置...
+    if(xpo &gt; x) {
+        dist = Math.ceil((xpo - x) / 10);
+        xpo -= dist;
+    }
+    //假如移动元素节点样式的top的绝对值小于要移动到的y轴位置,就将移动元素节点样式的top的绝对值赋值为它俩的差的十分之一的向上取整数值,这样的目的是为了实现越接近目标位置速度越慢的动态效果
+    if(ypo &lt; y) {
+        dist = Math.ceil((y - ypo) / 10);
+        ypo += dist;
+    }
+    //假如移动元素节点样式的top的绝对值大于要移动到的y轴位置...
+    if(ypo &gt; y) {
+        dist = Math.ceil((ypo - y) / 10);
+        ypo -= dist;
+    }
+    //将移动元素节点样式的top和left的绝对值取反,赋值重新赋值给移动元素节点样式
+    elem.style.left = `${-xpo}px`;
+    elem.style.top = `${-ypo}px`;
+    //未到目标位置,设置时间处理函数继续递归动态的元素节点函数,并把时间对象赋值给timer变量
+    timer = setTimeout(function timer() {
+        moveElement(node, x, y, speed);
+    }, speed);
+}
+</code></pre><h1 id="getGreyGeneral根据图片利用canvas制作灰度图"><a href="#getGreyGeneral根据图片利用canvas制作灰度图" class="headerlink" title="getGreyGeneral根据图片利用canvas制作灰度图"></a>getGreyGeneral根据图片利用canvas制作灰度图</h1><blockquote>
+<p>利用canvas画布可以制作各种各样的图片以及动画效果,包括二维、三维等图片和动画,灰度图就是二维图片中一个比较难处理的例子,由此对其进行封装</p>
+</blockquote>
+<pre><code>function getGreyGeneral(img) {
+    //假如Modernizr检测兼容的全局对象中查找不到canvas属性,就返回false,退出函数
+    if(!Modernizr.canvas) return false;
+    //假如document对象中不存在createElement方法,也返回false,退出函数
+    if(!document.createElement) return false;
+    //创建一个canvas元素节点对象
+    let canvas = document.createElement(&quot;canvas&quot;);
+    //设置canvas元素节点对象的宽和高为图片的宽和高
+    canvas.width = img.width;
+    canvas.height = img.height;
+    //获取canvas二维画布绘图环境
+    let ctx = canvas.getContext(&quot;2d&quot;);
+    //在二维画布绘图环境上面,根据图片DOM对象进行绘制,从图片DOM对象坐标的(0, 0)位置开始绘制
+    ctx.drawImage(img, 0, 0);
+    //获取到二维绘图环境的图片数据,从坐标(0, 0)位置开始,到图片的(img.width, img.height)宽度和高度位置截止
+    let c = ctx.getImageData(0, 0, img.width, img.height);
+    //对图片数据进行灰度处理,获取到每个像素的rgb值,每四个像素(最后一个像素永远是255)数据一组,求rgb的平均值,并重新赋值给rgb 
+    for(let i = 0;i &lt; c.height;i ++) {
+        for(let j = 0;j &lt; c.width;j ++) {
+            let x = i * 4 * c.height + j * 4,
+                data = c.data,
+                r = data[x],
+                g = data[x + 1],
+                b = data[x + 2];
+            data[x] = data[x + 1] = data[x + 2] = (r + g + b) / 3;
+        }
+    }
+    //将灰度处理好的二维绘图环境图片数据,重新赋予到原来的二维绘图环境上面,且设置二维绘图环境的偏移位置(0, 0),以及绘图处理渲染的偏移位置(0, 0),最后设置二维绘图环境图片数据的宽度和高度
+    ctx.putImageData(c, 0, 0, 0, 0, img.width, img.height);
+    //返回canvas生成的图片数据URL
+    return canvas.toDataURL();
+}
+</code></pre><h1 id="setVideoControl配置video视频播放器的默认播放和暂停按键"><a href="#setVideoControl配置video视频播放器的默认播放和暂停按键" class="headerlink" title="setVideoControl配置video视频播放器的默认播放和暂停按键"></a>setVideoControl配置video视频播放器的默认播放和暂停按键</h1><blockquote>
+<p>HTML5中新加了video和audio标签,以前都是使用object和embed标签来插入视频和音频插件,有好多繁琐的配置,现在有了video和audio标签使得我们在编写视频和音频代码时,方便快捷了很多,下面是对video播放和暂停键重置的封装</p>
+</blockquote>
+<pre><code>function setVideoControl(video) {
+    //首先先将video视频元素节点的controls属性删掉,这样controls一系列默认的播放、暂停键以及滑动条等配置就被剔除掉了
+    video.removeAttribute(&quot;controls&quot;);
+    //设置video视频元素节点的宽度和高度,分别为视频的实际宽度和高度
+    video.width = video.videoWidth;
+    video.height = video.videoHeight;
+    //设置video视频元素节点的宽度和高度,分别也为视频的实际宽度和高度
+    video.parentNode.width = video.videoWidth;
+    video.parentNode.height = video.videoHeight;
+    //创建一个承接播放/暂停按钮的div容器,再创建一个播放/暂停按钮
+    let play = document.createElement(&quot;div&quot;),
+        button = document.createElement(&quot;button&quot;);
+    //设置div容器的title标题属性默认为&quot;Play&quot;
+    play.setAttribute(&quot;title&quot;, &quot;Play&quot;);
+    //设置播放/暂停按钮默认的文本节点为&amp;#x25BA;(播放按钮)
+    button.innerHTML = &quot;&amp;#x25BA;&quot;;
+    //将播放/暂停按钮放入到div容器中
+    play.appendChild(button);
+    //并将承接播放/暂停按钮的div容器插入到video视频元素节点之前
+    video.parentNode.insertBefore(play, video);
+    //设置承接播放/暂停按钮的div容器点击事件: 
+    //假如video视频元素节点的暂停属性为true,则执行video视频元素节点的play播放方法
+    //否则执行vedio视频元素节点的pause暂停方法
+    play.onclick = function (e){
+        if(video.paused) {
+            video.play();
+        } else {
+            video.pause();
+        }
+    };
+    //设置video视频元素节点的play播放方法,将承载播放/暂停按钮的div容器title标题属性设置为Pause,并设置播放/暂停按钮的文本节点设置为&amp;#x2590;&amp;#x2590;(暂停按钮)
+    video.addEventListener(&quot;play&quot;, function (e) {
+        button.innerHTML = &quot;&amp;#x2590;&amp;#x2590;&quot;;
+        play.setAttribute(&quot;title&quot;, &quot;Pause&quot;);
+    });
+    //设置video视频元素节点的pause暂停方法,将承载播放/暂停按钮的div容器title标题属性设置为Play,并设置播放/暂停按钮的文本节点设置为&amp;#x25BA;;(播放按钮)
+    video.addEventListener(&quot;pause&quot;, function (e) {
+        button.innerHTML = &quot;&amp;#x25BA&quot;;
+        play.setAttribute(&quot;title&quot;, &quot;Play&quot;);
+    });
+    //设置video视频元素节点的ended视频结束方法,将video视频元素节点的currentTime属性(当前滑动条进度)设置为:起始位置,并执行video视频元素节点pause暂停方法
+    video.addEventListener(&quot;ended&quot;, function (e) {
+        video.currentTime = 0;
+        video.pause();
+    });
+}
 </code></pre>
       
     </div>
@@ -444,6 +686,10 @@ function debounce(fuc, delay) {
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/05/07/查漏补缺/" rel="prev" title="2018-05-07 查漏补缺">
+                2018-05-07 查漏补缺 <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -524,7 +770,7 @@ function debounce(fuc, delay) {
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">12</span>
+                  <span class="site-state-item-count">14</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -535,7 +781,7 @@ function debounce(fuc, delay) {
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">10</span>
+                  <span class="site-state-item-count">11</span>
                   <span class="site-state-item-name">分类</span>
                 </a>
               </div>
@@ -546,7 +792,7 @@ function debounce(fuc, delay) {
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">16</span>
+                  <span class="site-state-item-count">19</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -601,7 +847,7 @@ function debounce(fuc, delay) {
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#debounce函数节流"><span class="nav-number">1.</span> <span class="nav-text">debounce函数节流</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#debounce函数节流"><span class="nav-number">1.</span> <span class="nav-text">debounce函数节流</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#getElementsByClassName封装"><span class="nav-number">2.</span> <span class="nav-text">getElementsByClassName封装</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#addEvent加载完成事件封装"><span class="nav-number">3.</span> <span class="nav-text">addEvent加载完成事件封装</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#insertAfter插入到某个元素节点之后封装"><span class="nav-number">4.</span> <span class="nav-text">insertAfter插入到某个元素节点之后封装</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#isEmpty判断对象是否为空的封装"><span class="nav-number">5.</span> <span class="nav-text">isEmpty判断对象是否为空的封装</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#getNextElementSibling获取元素节点的下一个兄弟元素节点"><span class="nav-number">6.</span> <span class="nav-text">getNextElementSibling获取元素节点的下一个兄弟元素节点</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#moveElement动态的元素节点"><span class="nav-number">7.</span> <span class="nav-text">moveElement动态的元素节点</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#getGreyGeneral根据图片利用canvas制作灰度图"><span class="nav-number">8.</span> <span class="nav-text">getGreyGeneral根据图片利用canvas制作灰度图</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#setVideoControl配置video视频播放器的默认播放和暂停按键"><span class="nav-number">9.</span> <span class="nav-text">setVideoControl配置video视频播放器的默认播放和暂停按键</span></a></li></ol></div>
             
 
           </div>
