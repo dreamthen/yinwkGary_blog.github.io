@@ -87,7 +87,7 @@
 <meta property="og:site_name" content="yinwk_Gary Blog">
 <meta property="og:description" content="debounce函数节流 函数节流通常被用于输入下拉框、滚动懒加载等场景,目的只有一个,在短时间内,限制多次调用后台接口,浪费大量资源,防止接口响应数据时间上的误差造成的页面显示数据的错误。  //设置一个timer变量,用来承接setTimeout返回的延时对象 const timer = null; //函数节流方法 function debounce(fuc, delay) {     //">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2018-05-15T09:56:11.431Z">
+<meta property="og:updated_time" content="2018-05-16T12:50:36.731Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="2018-05-06 封装的一些小工具">
 <meta name="twitter:description" content="debounce函数节流 函数节流通常被用于输入下拉框、滚动懒加载等场景,目的只有一个,在短时间内,限制多次调用后台接口,浪费大量资源,防止接口响应数据时间上的误差造成的页面显示数据的错误。  //设置一个timer变量,用来承接setTimeout返回的延时对象 const timer = null; //函数节流方法 function debounce(fuc, delay) {     //">
@@ -645,6 +645,50 @@ function moveElement(node, x, y, speed) {
         video.pause();
     });
 }
+</code></pre><h1 id="Symbol-iterator迭代对象"><a href="#Symbol-iterator迭代对象" class="headerlink" title="Symbol.iterator迭代对象"></a>Symbol.iterator迭代对象</h1><blockquote>
+<p>说起Symbol.iterator,就会想到ES6新引进的迭代器,像Array.keys(),Array.values(),Array.entries(),都是Symbol.iterator迭代对象实现的,每一次迭代(.next())都会返回一个对象: {value: 迭代的值, done: 迭代的状态},当迭代结束,就会返回{value: undefined, done: true},但是这个迭代对象只存在于数组、Object对象以及Generator等迭代器里,要想迭代对象,需要手动去添加它的Symbol.iterator方法</p>
+</blockquote>
+<pre><code>let yinwk = {
+    name: &quot;Gary&quot;,
+    age: 25,
+    hobby: [&quot;basketball&quot;, &quot;tennis&quot;],
+    [Symbol.iterator]() {
+        //首先将this对象赋值给一个变量
+        let that = this,
+            //然后获取this对象指向的本对象的属性数组
+            that_key = Object.keys(that),
+            //接着获取本对象的属性数组的长度
+            len = that_key.length,
+            //最后定义一个递增变量,用来遍历本对象的属性值
+            index = 0;
+        //返回一个对象,对象中有一个next函数方法,在其中判断递增变量index是否大于属性数组的长度,
+        //假如不大于,说明没有迭代完成,则返回{value: 属性值(that[that_key[index++]]), done: false}
+        //假如大于,说明迭代完成,则返回{value: 属性值(that[that_key[index++]]), done: true}     
+        return {
+            next() {
+                if(index &gt; len){
+                    return {
+                        value: that[that_key[index++]],
+                        done: true
+                    }
+                } else {
+                    return {
+                        value: that[that_key[index++]],
+                        done: false
+                    }
+                }
+            }
+        }
+    }
+};
+//对添加好迭代对象的对象进行遍历
+//这里打印:
+// &quot;Gary&quot;
+// 25
+// [&quot;basketball&quot;, &quot;tennis&quot;]
+for(let value of yinwk) {
+    console.log(value);
+}
 </code></pre>
       
     </div>
@@ -770,7 +814,7 @@ function moveElement(node, x, y, speed) {
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">14</span>
+                  <span class="site-state-item-count">16</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -781,7 +825,7 @@ function moveElement(node, x, y, speed) {
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">11</span>
+                  <span class="site-state-item-count">13</span>
                   <span class="site-state-item-name">分类</span>
                 </a>
               </div>
@@ -792,7 +836,7 @@ function moveElement(node, x, y, speed) {
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">19</span>
+                  <span class="site-state-item-count">22</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -847,7 +891,7 @@ function moveElement(node, x, y, speed) {
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#debounce函数节流"><span class="nav-number">1.</span> <span class="nav-text">debounce函数节流</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#getElementsByClassName封装"><span class="nav-number">2.</span> <span class="nav-text">getElementsByClassName封装</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#addEvent加载完成事件封装"><span class="nav-number">3.</span> <span class="nav-text">addEvent加载完成事件封装</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#insertAfter插入到某个元素节点之后封装"><span class="nav-number">4.</span> <span class="nav-text">insertAfter插入到某个元素节点之后封装</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#isEmpty判断对象是否为空的封装"><span class="nav-number">5.</span> <span class="nav-text">isEmpty判断对象是否为空的封装</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#getNextElementSibling获取元素节点的下一个兄弟元素节点"><span class="nav-number">6.</span> <span class="nav-text">getNextElementSibling获取元素节点的下一个兄弟元素节点</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#moveElement动态的元素节点"><span class="nav-number">7.</span> <span class="nav-text">moveElement动态的元素节点</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#getGreyGeneral根据图片利用canvas制作灰度图"><span class="nav-number">8.</span> <span class="nav-text">getGreyGeneral根据图片利用canvas制作灰度图</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#setVideoControl配置video视频播放器的默认播放和暂停按键"><span class="nav-number">9.</span> <span class="nav-text">setVideoControl配置video视频播放器的默认播放和暂停按键</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#debounce函数节流"><span class="nav-number">1.</span> <span class="nav-text">debounce函数节流</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#getElementsByClassName封装"><span class="nav-number">2.</span> <span class="nav-text">getElementsByClassName封装</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#addEvent加载完成事件封装"><span class="nav-number">3.</span> <span class="nav-text">addEvent加载完成事件封装</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#insertAfter插入到某个元素节点之后封装"><span class="nav-number">4.</span> <span class="nav-text">insertAfter插入到某个元素节点之后封装</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#isEmpty判断对象是否为空的封装"><span class="nav-number">5.</span> <span class="nav-text">isEmpty判断对象是否为空的封装</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#getNextElementSibling获取元素节点的下一个兄弟元素节点"><span class="nav-number">6.</span> <span class="nav-text">getNextElementSibling获取元素节点的下一个兄弟元素节点</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#moveElement动态的元素节点"><span class="nav-number">7.</span> <span class="nav-text">moveElement动态的元素节点</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#getGreyGeneral根据图片利用canvas制作灰度图"><span class="nav-number">8.</span> <span class="nav-text">getGreyGeneral根据图片利用canvas制作灰度图</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#setVideoControl配置video视频播放器的默认播放和暂停按键"><span class="nav-number">9.</span> <span class="nav-text">setVideoControl配置video视频播放器的默认播放和暂停按键</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Symbol-iterator迭代对象"><span class="nav-number">10.</span> <span class="nav-text">Symbol.iterator迭代对象</span></a></li></ol></div>
             
 
           </div>
