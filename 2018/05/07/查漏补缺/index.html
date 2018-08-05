@@ -87,7 +87,7 @@
 <meta property="og:site_name" content="yinwk_Gary Blog">
 <meta property="og:description" content="赋值操作的返回 最近在读一本《JavaScript DOM 编程艺术》的书,其中有一句话引起了我的好奇,假如if判断语句中存在赋值语句,则赋值语句的返回总是true。我对此结果进行了检验  var a; //这种情况下,if判断语句中返回&amp;quot;good&amp;quot;,为true //打印&amp;quot;good result&amp;quot; if(a = &amp;quot;good&amp;quot;) {">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2018-05-16T13:27:17.779Z">
+<meta property="og:updated_time" content="2018-08-05T09:07:49.766Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="2018-05-07 查漏补缺">
 <meta name="twitter:description" content="赋值操作的返回 最近在读一本《JavaScript DOM 编程艺术》的书,其中有一句话引起了我的好奇,假如if判断语句中存在赋值语句,则赋值语句的返回总是true。我对此结果进行了检验  var a; //这种情况下,if判断语句中返回&amp;quot;good&amp;quot;,为true //打印&amp;quot;good result&amp;quot; if(a = &amp;quot;good&amp;quot;) {">
@@ -521,7 +521,50 @@ string_arr.sort(function sort_arr(a, b){
 //这里打印:
 //[&quot;Maeve&quot;, &quot;Maève&quot;]
 console.log(string_arr);
-</code></pre>
+</code></pre><h1 id="apply、call硬绑定小经验"><a href="#apply、call硬绑定小经验" class="headerlink" title="apply、call硬绑定小经验"></a>apply、call硬绑定小经验</h1><pre><code>function Person() {
+    this.name = &quot;Gary&quot;;
+    this.age = 26;
+    console.log(this.name);
+    console.log(this.age);
+}
+let clay = {
+    name: &quot;Clay&quot;,
+    age: 27
+};
+//这里充分证明了new绑定实现构造函数对象的优先级大于call或者apply硬绑定
+//Person函数的this指向并没有指向clay,还保持着初始值
+//而对象clay的属性name和age的值都改变为Person函数this指向的值
+//在这里打印:
+//Gary
+//26
+//Gary
+//26
+Person.call(clay);
+console.log(clay.name);
+console.log(clay.age);
+
+function Person() {
+    console.log(this.name);
+    console.log(this.age);
+}
+let clay = {
+    name: &quot;Clay&quot;,
+    age: 27
+};
+//这里Person函数的this指向clay
+//而对象clay的属性name和age的值还是保持着初始值
+//在这里打印:
+//Clay
+//27
+//Clay
+//27
+Person.call(clay);
+console.log(clay.name);
+console.log(clay.age);
+</code></pre><blockquote>
+<p>从上面的例子,我们可以得出this的绑定优先级: new绑定 &gt; apply、call和bind硬绑定 &gt; 普通对象软绑定 &gt; 默认绑定,当this对象上面的属性进行定义声明,再使用apply、call或者bind硬绑定时,new绑定this对象上面的属性的优先级就大于apply、call或者bind硬绑定对象上面的属性的优先级,这时候显示的就是this对象上面的属性值,当this对象上面的属性没有进行定义声明,这时候apply、call或者bind硬绑定对象上面的属性的优先级就是最大的,这时候显示的就是硬绑定对象上面的属性的属性值</p>
+</blockquote>
+
       
     </div>
     
@@ -725,7 +768,7 @@ console.log(string_arr);
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#赋值操作的返回"><span class="nav-number">1.</span> <span class="nav-text">赋值操作的返回</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#模板字符串的换行功能"><span class="nav-number">2.</span> <span class="nav-text">模板字符串的换行功能</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ES6类的存取函数"><span class="nav-number">3.</span> <span class="nav-text">ES6类的存取函数</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#各类型比较运算符时的转化"><span class="nav-number">4.</span> <span class="nav-text">各类型比较运算符时的转化</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ES6新增Array-prototype-include"><span class="nav-number">5.</span> <span class="nav-text">ES6新增Array.prototype.include</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ES6类型数组"><span class="nav-number">6.</span> <span class="nav-text">ES6类型数组</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#对具有着重符的字符串数组进行排序"><span class="nav-number">7.</span> <span class="nav-text">对具有着重符的字符串数组进行排序</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#赋值操作的返回"><span class="nav-number">1.</span> <span class="nav-text">赋值操作的返回</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#模板字符串的换行功能"><span class="nav-number">2.</span> <span class="nav-text">模板字符串的换行功能</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ES6类的存取函数"><span class="nav-number">3.</span> <span class="nav-text">ES6类的存取函数</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#各类型比较运算符时的转化"><span class="nav-number">4.</span> <span class="nav-text">各类型比较运算符时的转化</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ES6新增Array-prototype-include"><span class="nav-number">5.</span> <span class="nav-text">ES6新增Array.prototype.include</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ES6类型数组"><span class="nav-number">6.</span> <span class="nav-text">ES6类型数组</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#对具有着重符的字符串数组进行排序"><span class="nav-number">7.</span> <span class="nav-text">对具有着重符的字符串数组进行排序</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#apply、call硬绑定小经验"><span class="nav-number">8.</span> <span class="nav-text">apply、call硬绑定小经验</span></a></li></ol></div>
             
 
           </div>
