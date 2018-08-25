@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="Hexo, NexT" />
+  <meta name="keywords" content="Javascript,设计模式," />
 
 
 
@@ -79,17 +79,18 @@
 
 
 
-<meta name="description" content="Gary&apos;s blog,记录_从今天开始">
-<meta name="keywords" content="github,博客,hexo,hexo-cli,hexo博客,hexo博客个人网站">
-<meta property="og:type" content="website">
-<meta property="og:title" content="yinwk_Gary Blog">
-<meta property="og:url" content="http://yoursite.com/tags/webpack-dev-server/index.html">
+<meta name="description" content="单例模式 单例模式有两个特点: 全局性和唯一性.全局唯一性是指在全局环境中,只创建对象一次且保证对象在创建过后不被再次创建.下面我们就来演示一下Javascript语言的普通类单例模式和透明单例模式  普通类单例模式function GetSingleton(name) {     this.name = name;     this.instance = null; }  GetSingleto">
+<meta name="keywords" content="Javascript,设计模式">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Javascript设计模式">
+<meta property="og:url" content="http://yoursite.com/2018/08/25/Javascript设计模式/index.html">
 <meta property="og:site_name" content="yinwk_Gary Blog">
-<meta property="og:description" content="Gary&apos;s blog,记录_从今天开始">
+<meta property="og:description" content="单例模式 单例模式有两个特点: 全局性和唯一性.全局唯一性是指在全局环境中,只创建对象一次且保证对象在创建过后不被再次创建.下面我们就来演示一下Javascript语言的普通类单例模式和透明单例模式  普通类单例模式function GetSingleton(name) {     this.name = name;     this.instance = null; }  GetSingleto">
 <meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-08-25T08:16:08.272Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="yinwk_Gary Blog">
-<meta name="twitter:description" content="Gary&apos;s blog,记录_从今天开始">
+<meta name="twitter:title" content="Javascript设计模式">
+<meta name="twitter:description" content="单例模式 单例模式有两个特点: 全局性和唯一性.全局唯一性是指在全局环境中,只创建对象一次且保证对象在创建过后不被再次创建.下面我们就来演示一下Javascript语言的普通类单例模式和透明单例模式  普通类单例模式function GetSingleton(name) {     this.name = name;     this.instance = null; }  GetSingleto">
 
 
 
@@ -119,13 +120,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/tags/webpack-dev-server/"/>
+  <link rel="canonical" href="http://yoursite.com/2018/08/25/Javascript设计模式/"/>
 
 
 
 
 
-  <title>标签: webpack-dev-server | yinwk_Gary Blog</title>
+  <title>Javascript设计模式 | yinwk_Gary Blog</title>
   
 
 
@@ -144,7 +145,7 @@
     
   
 
-  <div class="container sidebar-position-left ">
+  <div class="container sidebar-position-left page-post-detail">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -282,54 +283,431 @@
           <div id="content" class="content">
             
 
-  
-  
-  
-  <div class="post-block tag">
+  <div id="posts" class="posts-expand">
+    
 
-    <div id="posts" class="posts-collapse">
-      <div class="collection-title">
-        <h1>webpack-dev-server<small>标签</small>
-        </h1>
-      </div>
+  
 
-      
-        
+  
+  
+  
 
   <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/08/25/Javascript设计模式/">
 
-      <h2 class="post-title">
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="yinwk_Gary">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://avatars1.githubusercontent.com/u/13704681?s=400&u=bfc4636397a7c4384f63d4836a33d1797cd2c660&v=4">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="yinwk_Gary Blog">
+    </span>
+
+    
+      <header class="post-header">
+
         
-            <a class="post-title-link" href="/2018/04/27/关于webpack/" itemprop="url">
-              
-                <span itemprop="name">2018-04-27 关于webpack</span>
-              
-            </a>
         
-      </h2>
+          <h1 class="post-title" itemprop="name headline">Javascript设计模式</h1>
+        
 
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2018-04-27T15:55:45+08:00"
-              content="2018-04-27" >
-          04-27
-        </time>
-      </div>
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-08-25T11:37:47+08:00">
+                2018-08-25
+              </time>
+            
 
-    </header>
-  </article>
+            
 
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Javascript设计模式/" itemprop="url" rel="index">
+                    <span itemprop="name">Javascript设计模式</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
 
       
-    </div>
+      
 
+      
+        <h1 id="单例模式"><a href="#单例模式" class="headerlink" title="单例模式"></a>单例模式</h1><blockquote>
+<p>单例模式有两个特点: 全局性和唯一性.全局唯一性是指在全局环境中,只创建对象一次且保证对象在创建过后不被再次创建.下面我们就来演示一下Javascript语言的普通类单例模式和透明单例模式</p>
+</blockquote>
+<h2 id="普通类单例模式"><a href="#普通类单例模式" class="headerlink" title="普通类单例模式"></a>普通类单例模式</h2><pre><code>function GetSingleton(name) {
+    this.name = name;
+    this.instance = null;
+}
+
+GetSingleton.prototype.getName = function() {
+    return this.name;
+};
+
+GetSingleton.prototype.Singleton = function(name) {
+    return this.instance || (this.instance = new GetSingleton(name));  
+};
+
+let gary_one = GetSingleton.prototype.Singleton(&quot;gary_one&quot;);
+let gary_two = GetSingleton.prototype.Singleton(&quot;gary_two&quot;);
+//在这里打印:
+//true
+console.log(gary_one === gary_two);
+</code></pre><h2 id="普通类单例模式-闭包版本"><a href="#普通类单例模式-闭包版本" class="headerlink" title="普通类单例模式(闭包版本)"></a>普通类单例模式(闭包版本)</h2><pre><code>function GetSingleton(name) {
+    this.name = name;
+}
+
+GetSingleton.prototype.getName = function() {
+    return this.name;
+};
+
+let Singleton = (function() {
+    let instance;
+    return function(name) {
+        return instance || (instance = new GetSingleton(name));
+    }
+})();
+
+let gary_one = Singleton(&quot;gary_one&quot;);
+let gary_two = Singleton(&quot;gary_two&quot;);
+//在这里打印:
+//true
+console.log(gary_one === gary_two);
+</code></pre><h2 id="透明单例模式"><a href="#透明单例模式" class="headerlink" title="透明单例模式"></a>透明单例模式</h2><pre><code>let GetSingleton = (function() {
+    let instance;
+    return function(html) {
+        if(instance) {
+            return instance;
+        }
+        this.html = html;
+        this.init();
+        return instance = this;
+    }
+})();
+
+GetSingleton.prototype.init = function() {
+    let div = document.createElement(&quot;div&quot;);
+    div.innerHTML = this.html;
+    document.body.appendChild(div);
+    return div;
+};
+
+let gary_one = new GetSingleton(&quot;gary_one&quot;);
+let gary_two = new GetSingleton(&quot;gary_two&quot;);
+//页面上只有创造了一个DIV DOM节点,内容是&quot;gary_one&quot;
+//在这里打印:
+//true
+console.log(gary_one === gary_two);
+</code></pre><h2 id="透明单例模式-代理模式版本"><a href="#透明单例模式-代理模式版本" class="headerlink" title="透明单例模式(代理模式版本)"></a>透明单例模式(代理模式版本)</h2><pre><code>function GetSingleton(html) {
+    this.html = html;
+    this.init();
+}
+
+GetSingleton.prototype.init = function() {
+    let div = document.createElement(&quot;div&quot;);
+    div.innerHTML = this.html;
+    document.body.appendChild(div);
+}
+
+let Singleton = (function() {
+    let instance;
+    return function(html) {
+        return instance || (instance = new GetSingleton(html));
+    }
+})();
+
+let gary_one = new Singleton(&quot;gary_one&quot;);
+let gary_two = new Singleton(&quot;gary_two&quot;);
+//页面上只有创造了一个DIV DOM节点,内容是&quot;gary_one&quot;
+//在这里打印:
+//true
+console.log(gary_one === gary_two);
+</code></pre><h2 id="Javascript单例模式-———-单一对象"><a href="#Javascript单例模式-———-单一对象" class="headerlink" title="Javascript单例模式 ——— 单一对象"></a>Javascript单例模式 ——— 单一对象</h2><pre><code>let obj_only = {
+    a() {
+        console.log(&quot;a&quot;);
+    },
+    b() {
+        console.log(&quot;b&quot;);
+    }
+};
+//在这里打印:
+//a
+obj_only.a();
+//在这里打印:
+//b
+obj_only.b();
+
+//动态空间对象
+let MyApp = {};
+MyApp.namespace = function(model) {
+    let parts = model.split(&quot;.&quot;),
+        prototype = MyApp;
+    for(let [key, value] of parts.entries()) {
+        if(!prototype[value]) {
+            prototype[value] = {};
+        }
+        prototype = prototype[value];
+    }    
+};
+MyApp.namespace(&quot;model&quot;);
+MyApp.namespace(&quot;div.style&quot;);
+//在这里打印:
+//{model: {}, div: {style: {}}}
+console.log(MyApp);
+
+//闭包
+function Person() {
+    let _name = &quot;Gary&quot;,
+        _age = 26;
+     return function() {
+        return `name: ${_name}, age: ${_age}`;
+     }   
+}
+let Gary = Person();
+//在这里打印:
+//name: Gary, age: 26
+console.log(Gary());
+</code></pre><h2 id="惰性单例模式"><a href="#惰性单例模式" class="headerlink" title="惰性单例模式"></a>惰性单例模式</h2><pre><code>//首先演示的不是惰性单例模式,而是对于创造单个对象有哪几种方式
+let GetSingleton = (function (){
+    let div = document.createElement(&quot;div&quot;);
+    div.innerHTML = &quot;Gary&quot;;
+    div.style.display = &quot;none&quot;;
+    document.body.appendChild(div);
+    return div;
+})();
+
+function Singleton() {
+    document.getElementById(&quot;open&quot;).onclick = function(e) {
+        let singletonDiv = GetSingleton;
+        singletonDiv.style.display = &quot;block&quot;;
+        //取消冒泡事件
+        e.stopImmediatePropagation();
+    };
+}
+
+//这种情况下,无论调不调用Singleton方法,界面在最开始加载时,就已经进行了DOM操作,添加了一个DIV DOM节点,并把这个节点的内容设置为Gary,显示方式设置为none,这种方式的确时创造了单个对象且不可再次创造,但是缺点还是比较明显的,创造不创造单个对象跟绑定事件并没有关系,假如我在页面上并没有触发绑定的事件,页面上在一开始还是具有已经创造好的DIV DOM节点的
+Singleton();
+
+
+function GetSingleton() {
+    let div = document.createElement(&quot;div&quot;);
+    div.innerHTML = &quot;Gary&quot;;
+    div.style.display = &quot;none&quot;;
+    document.body.appendChild(div);
+    return div;
+}
+
+function Singleton() {
+    document.getElementById(&quot;open&quot;).onclick = function(e) {
+        let singletonDiv = GetSingleton();
+        singletonDiv.style.display = &quot;block&quot;;
+        //取消冒泡
+        e.stopImmediatePropagation();
+    };
+}
+
+//这种情况下,满足了调用时再创造单个对象的条件,但是并不满足创造了单个对象并不可再次创造的条件,在这种情况下,每点击一次id为open的按钮一次,就会创造一个对象,这显然是不符合单例模式的特点的
+Singleton();
+
+let GetSingleton = (function() {
+    let res;
+    return function() {
+        if(!res) {
+            res = document.createElement(&quot;div&quot;);
+            res.innerHTML = &quot;Gary&quot;;
+            res.style.display = &quot;none&quot;;
+            document.body.appendChild(res);
+        }
+        return res;
+    }
+})();
+
+function Singleton() {
+    document.getElementById(&quot;open&quot;).onclick = function(e) {
+        let singletonDiv = GetSingleton();
+        singletonDiv.style.display = &quot;block&quot;;
+        //取消冒泡
+        e.stopImmediatePropagation();
+    };
+}
+
+//这种才是真正的惰性单例模式,在调用绑定事件时才创造单个对象,且也满足创造了单个对象并不可再次创造的条件,但是还是有优化的空间的
+Singleton();
+</code></pre><h2 id="惰性单例模式-优化版本"><a href="#惰性单例模式-优化版本" class="headerlink" title="惰性单例模式(优化版本)"></a>惰性单例模式(优化版本)</h2><pre><code>function GetSingleton(func) {
+    let res;
+    return function() {
+        return res || (res = func.apply(this, arguments));
+    }
+}
+
+let singleton = GetSingleton(function() {
+    let div = document.createElement(&quot;div&quot;);
+    div.innerHTML = &quot;Gary&quot;;
+    div.style.display = &quot;none&quot;;
+    document.body.appendChild(div);
+    return div;
+});
+
+function Singleton() {
+    document.getElementById(&quot;open&quot;).onclick = function(e) {
+        let singletonDiv = singleton();
+        singletonDiv.style.display = &quot;block&quot;;
+        //取消冒泡事件
+        e.stopImmediatePropagation();
+    };
+}
+
+//这是惰性单例模式的最终优化版本,最显著的特点时它的复用性,无论是创造任何的DOM节点,只用GetSingleton函数方法,外部传入一个func函数即可,立即满足创造单一对象之后不可再次创建的特点
+Singleton();
+</code></pre><h2 id="惰性单例模式的应用"><a href="#惰性单例模式的应用" class="headerlink" title="惰性单例模式的应用"></a>惰性单例模式的应用</h2><blockquote>
+<p>还记得jQuery工具库的.one函数方法嘛,它就是最经典的单例模式例子,我们今天来模拟一下</p>
+</blockquote>
+<pre><code>function GetSingleton(func) {
+    let res;
+    return function() {
+        return res || (res = func.apply(this, arguments));
+    }
+}
+
+let bindEvent = GetSingleton(function () {
+    document.getElementById(&quot;open&quot;).onclick = function(e) {
+        alert(&quot;Gary&quot;);
+        //取消冒泡
+        e.stopImmediatePropagation();
+    };
+    console.log(&quot;bind~&quot;);
+    return true;
+});
+
+function render() {
+    console.log(&quot;开始渲染~&quot;);
+    bindEvent();
+}
+
+//切实的实现了单例模式&quot;一朝绑定,终生收益&quot;的特性
+//在这里打印:
+//开始渲染~
+//bind~
+//开始渲染~
+//开始渲染~
+render();
+render();
+render();
+</code></pre>
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Javascript/" rel="tag"># Javascript</a>
+          
+            <a href="/tags/设计模式/" rel="tag"># 设计模式</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/05/21/使用Canvas绘制圆角按钮/" rel="next" title="2018-05-21 使用Canvas绘制圆角按钮">
+                <i class="fa fa-chevron-left"></i> 2018-05-21 使用Canvas绘制圆角按钮
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
   </div>
   
   
   
+  </article>
 
-  
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
 
 
           </div>
@@ -337,6 +715,10 @@
 
 
           
+
+  
+
+
 
         </div>
         
@@ -357,8 +739,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -444,6 +835,22 @@
         </div>
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#单例模式"><span class="nav-number">1.</span> <span class="nav-text">单例模式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#普通类单例模式"><span class="nav-number">1.1.</span> <span class="nav-text">普通类单例模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#普通类单例模式-闭包版本"><span class="nav-number">1.2.</span> <span class="nav-text">普通类单例模式(闭包版本)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#透明单例模式"><span class="nav-number">1.3.</span> <span class="nav-text">透明单例模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#透明单例模式-代理模式版本"><span class="nav-number">1.4.</span> <span class="nav-text">透明单例模式(代理模式版本)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Javascript单例模式-———-单一对象"><span class="nav-number">1.5.</span> <span class="nav-text">Javascript单例模式 ——— 单一对象</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#惰性单例模式"><span class="nav-number">1.6.</span> <span class="nav-text">惰性单例模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#惰性单例模式-优化版本"><span class="nav-number">1.7.</span> <span class="nav-text">惰性单例模式(优化版本)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#惰性单例模式的应用"><span class="nav-number">1.8.</span> <span class="nav-text">惰性单例模式的应用</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
@@ -577,6 +984,10 @@
   
 
   
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
 
   
 
