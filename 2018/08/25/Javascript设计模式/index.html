@@ -87,7 +87,7 @@
 <meta property="og:site_name" content="yinwk_Gary Blog">
 <meta property="og:description" content="单例模式 单例模式有两个特点: 全局性和唯一性.全局唯一性是指在全局环境中,只创建对象一次且保证对象在创建过后不被再次创建.下面我们就来演示一下Javascript语言的普通类单例模式和透明单例模式  普通类单例模式function GetSingleton(name) {     this.name = name;     this.instance = null; }  GetSingleto">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2018-08-30T15:47:34.425Z">
+<meta property="og:updated_time" content="2018-09-02T09:52:13.006Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Javascript设计模式">
 <meta name="twitter:description" content="单例模式 单例模式有两个特点: 全局性和唯一性.全局唯一性是指在全局环境中,只创建对象一次且保证对象在创建过后不被再次创建.下面我们就来演示一下Javascript语言的普通类单例模式和透明单例模式  普通类单例模式function GetSingleton(name) {     this.name = name;     this.instance = null; }  GetSingleto">
@@ -931,9 +931,248 @@ userAgent.onsubmit = function(e) {
     e.preventDefault();
 };
 </code></pre><blockquote>
-<p>这样就完美解决了多个验证条件的问题,这种策略模式可复用,可扩展,可替换,十分完美    </p>
+<p>这样就完美解决了多个验证条件的问题,这种策略模式可复用,可扩展,可替换,十分完美</p>
 </blockquote>
+<h1 id="代理模式"><a href="#代理模式" class="headerlink" title="代理模式"></a>代理模式</h1><blockquote>
+<p>下面我们要介绍的是代理模式,顾名思义,代理模式就是通过代理层去替代实体对象处理一些信息,其实就是在保护实体对象,减少实体对象的职责,在过滤、处理、整合信息之后再交给实体对象,这样会使得实体对象很轻便,对于实体对象的扩展性、维护性以及替换性有很大的帮助</p>
+</blockquote>
+<pre><code>function Flower() {
+}
 
+let xiaoming = {
+    sendFlower(target) {
+        let flower = new Flower();
+        target.receiveFlower(flower);
+    }
+};
+
+let A = {
+    receiveFlower(flower) {
+        console.log(&quot;已收到花朵: &quot; + flower);
+    }
+};
+
+let B = {
+    receiveFlower(flower) {
+        A.receiveFlower(flower);
+    }
+};
+
+//在这里打印:
+//已收到花朵: [object Object]
+xiaoming.sendFlower(B);
+</code></pre><blockquote>
+<p>这样就形成了一个小明送给女神A花朵表达想和她恋爱的心意,又不太好意思亲自送,只好让他跟A共同的好友B来进行代理送,这就是一个典型的代理模式的例子,你可能会问,这样做有什么意义呢,只不过多了一层罢了,的确这样只是多添加了一层而已,但是假如我们再改编一下剧情,你就会感觉很有意义</p>
+</blockquote>
+<pre><code>function Flower() {
+}
+
+let xiaoming = {
+    sendFlower(target) {
+        let flower = new Flower();
+        target.receiveFlower(flower);
+    }
+};
+
+let A = {
+    receiveFlower(flower) {
+        console.log(&quot;已收到花朵: &quot; + flower);
+    },
+    listenerBeHappy(func) {
+        let self = this;
+        setTimeout(function() {
+            func.apply(self);
+        }, 1000);
+    }
+};
+
+let B = {
+    receiveFlower(flower) {
+        A.listenerBeHappy(function () {
+            this.receiveFlower(flower);
+        });
+    }
+};
+
+//在这里打印:
+//已收到花朵: [object Object]
+xiaoming.sendFlower(B);
+</code></pre><blockquote>
+<p>故事的剧情转变成了这样,小明送给女神A花朵表达想和她恋爱的心意,又不太好意思亲自送,只好让他跟A共同的好友B来进行代理送,B清楚A什么时间心情最好,什么时间可以接受别人对她的表白,所以B在A心情很好的时候将小明的花朵转交给女神A,虽然也不见得小明的追求会成功,但是B的代理工作充分表明了代理模式</p>
+</blockquote>
+<h2 id="虚拟代理"><a href="#虚拟代理" class="headerlink" title="虚拟代理"></a>虚拟代理</h2><blockquote>
+<p>我们使用虚拟代理来写一个懒加载图片的例子,通常我们使用Js写加载图片时,一般会这么做</p>
+</blockquote>
+<pre><code>let loadImage = (function () {
+    let Image = document.createElement(&quot;img&quot;);
+    document.body.appendChild(Image);
+    return {
+        setSrc(src) {
+            Image.src = src;
+        }
+    }
+})();
+
+loadImage.setSrc(&quot;https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png&quot;);
+</code></pre><blockquote>
+<p>但是这样做有一个用户体验的交互问题,图片还没有完全渲染的时候,图片区域是空白的,这时候我们需要使用代理来虚拟在图片还没有完全渲染完毕的时候,先在所在区域展示loading加载图,当图片完全渲染完毕之后,再将所在区域替换成图片</p>
+</blockquote>
+<pre><code>let loadImage = (function () {
+    let Image = document.createElement(&quot;img&quot;);
+    document.body.appendChild(Image);
+    return {
+        setSrc(src) {
+            Image.src = src;
+        }
+    }
+})();
+
+let proxyLoadImage = (function () {
+    let img = new Image();
+    img.onload = function() {
+        loadImage.setSrc(this.src);
+    };
+
+    return {
+        setSrc(src) {
+            loadImage.setSrc(&quot;../img/zy.jpeg&quot;);
+            img.src = src;
+        }
+    }
+})();
+
+proxyLoadImage.setSrc(&quot;https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png&quot;);
+</code></pre><blockquote>
+<p>虚拟代理模式对于用户是无感的,用户不会知道你使用的是实体对象接口还是虚拟代理对象接口,且虚拟代理对象的复用性、扩展性以及可替换性都是很完美的,完全不会破坏原有的实体对象的代码结构,下面我们来写一个使用虚拟代理模式实现批量提交文件,节省浏览器和后台服务器资源的例子</p>
+</blockquote>
+<pre><code>function syncReadFile(id) {
+    console.log(&quot;开始上传文件: &quot; + id);
+}
+
+let checkbox = document.getElementsByName(&quot;checkbox&quot;);
+for(let i = 0; i &lt; checkbox.length; i ++) {
+    checkbox[i].onclick = function(e) {
+        if(this.checked) {
+            syncReadFile(this.id);
+        }
+        //取消冒泡事件
+        e.stopImmediatePropagation();
+    };
+}
+</code></pre><blockquote>
+<p>这个例子,我每点一次复选框,且复选框选中,就会上传文件,在短时间内选中多个复选框,会造成大量的上传请求发出,频繁的调用上传接口,会大量浪费浏览器和后台服务器资源,所以我们设置一个函数节流函数来模拟syncReadFile函数,相当于是一个虚拟代理模式的函数,节省浏览器和后台服务器资源</p>
+</blockquote>
+<pre><code>function syncReadFile(id) {
+    console.log(&quot;开始上传文件: &quot; + id);
+}
+
+let proxySyncReadFile = (function() {
+    let cache = [],
+        timer = null;
+    return function (id) {
+        let self = this;
+        cache = [...cache, id];
+        if(timer) {
+            return false;
+        }
+        timer = setTimeout(function () {
+            let id_transform = cache.join(&quot;,&quot;);
+            syncReadFile.call(self, id_transform);
+            clearTimeout(timer);
+            timer = null;
+            cache.length = 0;
+        }, 2000);
+    }    
+})();
+
+let checkbox = document.getElementsByName(&quot;checkbox&quot;);
+for(let i = 0; i &lt; checkbox.length; i ++) {
+    checkbox[i].onclick = function (e) {
+        if(this.checked) {
+            proxySyncReadFile(this.id);
+        }
+        //取消冒泡事件
+        e.stopImmediatePropagation();
+    };
+}
+</code></pre><h2 id="缓存代理"><a href="#缓存代理" class="headerlink" title="缓存代理"></a>缓存代理</h2><blockquote>
+<p>我们先来写一个缓存代理计算乘积的例子,当传入的参数与上一次传入的参数相同时,就使用缓存中的乘积结果,不需要再次进行计算</p>
+</blockquote>
+<pre><code>function getMultiple() {
+    let cache = {};
+    function multiple() {
+        let a = 1;
+        for(let i = 0; i &lt; arguments.length; i ++) {
+            a *= arguments[i];
+        }
+        return a;
+    }
+    return function() {
+        let cache_prototype = Array.prototype.join.call(arguments, &quot;_&quot;);
+        if(cache[cache_prototype]) {
+            return cache[cache_prototype];
+        }
+        console.log(&quot;again&quot;);
+        return cache[cache_prototype] = multiple.apply(this, arguments);
+    }
+}
+
+let multipleForReal = getMultiple();
+//在这里打印:
+//again
+//168
+console.log(multipleForReal(4, 6, 7));
+//在这里打印:
+//168
+console.log(multipleForReal(4, 6, 7));
+</code></pre><blockquote>
+<p>让我们将事情变得更有趣一些</p>
+</blockquote>
+<pre><code>function plus() {
+    let a = 0;
+    for(let i = 0; i &lt; arguments.length; i ++) {
+        a += arguments[i];
+    }
+    return a;
+}
+
+function multiple() {
+    let a = 1;
+    for(let i = 0; i &lt; arguments.length; i ++) {
+        a *= arguments[i];
+    }
+    return a;
+}
+
+function getMethod(func) {
+    let cache = {};
+    return function () {
+        let cache_prototype = Array.prototype.join.call(arguments, &quot;_&quot;);
+        if(cache[cache_prototype]) {
+            return cache[cache_prototype];
+        }
+        console.log(&quot;again&quot;);
+        return cache[cache_prototype] = func.apply(this, arguments);
+    }
+}
+
+let getMethodResult = getMethod(plus);
+//在这里打印:
+//again
+//20
+console.log(getMethodResult(4, 8, 8));
+//在这里打印:
+//20
+console.log(getMethodResult(4, 8, 8));
+let getMethodResult_multiple = getMethod(multiple);
+//在这里打印:
+//again
+//256
+console.log(getMethodResult_multiple(4, 8, 8));
+//在这里打印:
+//256
+console.log(getMethodResult_multiple(4, 8, 8));
+</code></pre>
       
     </div>
     
@@ -1131,7 +1370,7 @@ userAgent.onsubmit = function(e) {
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#单例模式"><span class="nav-number">1.</span> <span class="nav-text">单例模式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#普通类单例模式"><span class="nav-number">1.1.</span> <span class="nav-text">普通类单例模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#普通类单例模式-闭包版本"><span class="nav-number">1.2.</span> <span class="nav-text">普通类单例模式(闭包版本)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#透明单例模式"><span class="nav-number">1.3.</span> <span class="nav-text">透明单例模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#透明单例模式-代理模式版本"><span class="nav-number">1.4.</span> <span class="nav-text">透明单例模式(代理模式版本)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Javascript单例模式-———-单一对象"><span class="nav-number">1.5.</span> <span class="nav-text">Javascript单例模式 ——— 单一对象</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#惰性单例模式"><span class="nav-number">1.6.</span> <span class="nav-text">惰性单例模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#惰性单例模式-优化版本"><span class="nav-number">1.7.</span> <span class="nav-text">惰性单例模式(优化版本)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#惰性单例模式的应用"><span class="nav-number">1.8.</span> <span class="nav-text">惰性单例模式的应用</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#策略模式"><span class="nav-number">2.</span> <span class="nav-text">策略模式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Javascript策略模式"><span class="nav-number">2.1.</span> <span class="nav-text">Javascript策略模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#策略模式-——-表单验证"><span class="nav-number">2.2.</span> <span class="nav-text">策略模式 —— 表单验证</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#单例模式"><span class="nav-number">1.</span> <span class="nav-text">单例模式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#普通类单例模式"><span class="nav-number">1.1.</span> <span class="nav-text">普通类单例模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#普通类单例模式-闭包版本"><span class="nav-number">1.2.</span> <span class="nav-text">普通类单例模式(闭包版本)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#透明单例模式"><span class="nav-number">1.3.</span> <span class="nav-text">透明单例模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#透明单例模式-代理模式版本"><span class="nav-number">1.4.</span> <span class="nav-text">透明单例模式(代理模式版本)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Javascript单例模式-———-单一对象"><span class="nav-number">1.5.</span> <span class="nav-text">Javascript单例模式 ——— 单一对象</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#惰性单例模式"><span class="nav-number">1.6.</span> <span class="nav-text">惰性单例模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#惰性单例模式-优化版本"><span class="nav-number">1.7.</span> <span class="nav-text">惰性单例模式(优化版本)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#惰性单例模式的应用"><span class="nav-number">1.8.</span> <span class="nav-text">惰性单例模式的应用</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#策略模式"><span class="nav-number">2.</span> <span class="nav-text">策略模式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Javascript策略模式"><span class="nav-number">2.1.</span> <span class="nav-text">Javascript策略模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#策略模式-——-表单验证"><span class="nav-number">2.2.</span> <span class="nav-text">策略模式 —— 表单验证</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#代理模式"><span class="nav-number">3.</span> <span class="nav-text">代理模式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#虚拟代理"><span class="nav-number">3.1.</span> <span class="nav-text">虚拟代理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#缓存代理"><span class="nav-number">3.2.</span> <span class="nav-text">缓存代理</span></a></li></ol></li></ol></div>
             
 
           </div>
